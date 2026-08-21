@@ -1,13 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import {
-  Home,
-  DollarSign,
-  Users,
-  ClipboardList,
-  Sparkles,
-  type LucideIcon,
-} from "lucide-react";
+import { Home, type LucideIcon } from "lucide-react";
+import { modules, globalItems } from "@/config/navigation";
 
 interface NavItem {
   label: string;
@@ -16,37 +10,19 @@ interface NavItem {
   matchPaths?: string[];
 }
 
+const financeiro = modules.find((m) => m.id === "financeiro")!;
+const crm = modules.find((m) => m.id === "crm")!;
+const gestao = modules.find((m) => m.id === "gestao")!;
+const assistenteIA = globalItems.find((i) => i.to === "/assistente-ia")!;
+
+// Curated 5-slot subset for thumb reach — icons/paths derive from the shared
+// nav config so they can't drift, but the selection/labels here stay hand-picked.
 const navItems: NavItem[] = [
-  { 
-    label: "Início", 
-    to: "/", 
-    icon: Home,
-    matchPaths: ["/"]
-  },
-  { 
-    label: "Financeiro", 
-    to: "/financeiro", 
-    icon: DollarSign,
-    matchPaths: ["/financeiro"]
-  },
-  { 
-    label: "CRM", 
-    to: "/crm/pipeline", 
-    icon: Users,
-    matchPaths: ["/crm"]
-  },
-  { 
-    label: "Gestão", 
-    to: "/gestao", 
-    icon: ClipboardList,
-    matchPaths: ["/gestao"]
-  },
-  { 
-    label: "IA", 
-    to: "/assistente-ia", 
-    icon: Sparkles,
-    matchPaths: ["/assistente-ia"]
-  },
+  { label: "Início", to: "/", icon: Home, matchPaths: ["/"] },
+  { label: "Financeiro", to: financeiro.basePath, icon: financeiro.icon, matchPaths: [financeiro.basePath] },
+  { label: "CRM", to: "/crm/pipeline", icon: crm.icon, matchPaths: [crm.basePath] },
+  { label: "Gestão", to: gestao.basePath, icon: gestao.icon, matchPaths: [gestao.basePath] },
+  { label: "IA", to: assistenteIA.to, icon: assistenteIA.icon, matchPaths: [assistenteIA.to] },
 ];
 
 export function MobileBottomNav() {

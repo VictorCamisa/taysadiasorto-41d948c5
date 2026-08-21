@@ -30,8 +30,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { useAdminData, ROLE_LABELS, AppRole, Profile } from "./hooks/useAdminData";
 import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "./EmptyState";
-import { ConfirmDialog } from "./ConfirmDialog";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { SolicitacoesAcessoSection } from "./SolicitacoesAcessoSection";
 
 export function UsuariosTab() {

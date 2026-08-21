@@ -15,7 +15,7 @@ import {
   AIAgent,
   AIAgentConversation,
 } from "@/hooks/useAIAgents";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 const AssistenteIA = () => {
   const [selectedAgent, setSelectedAgent] = useState<AIAgent | null>(null);
@@ -229,23 +229,15 @@ const AssistenteIA = () => {
         isSaving={isCreating}
       />
 
-      {/* Delete Confirmation */}
-      <AlertDialog open={!!deleteAgentId} onOpenChange={() => setDeleteAgentId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir Agente?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta ação não pode ser desfeita. Todas as conversas e documentos do agente serão removidos.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteAgent} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={!!deleteAgentId}
+        onOpenChange={() => setDeleteAgentId(null)}
+        title="Excluir Agente?"
+        description="Esta ação não pode ser desfeita. Todas as conversas e documentos do agente serão removidos."
+        confirmLabel="Excluir"
+        variant="destructive"
+        onConfirm={handleDeleteAgent}
+      />
     </div>
   );
 };

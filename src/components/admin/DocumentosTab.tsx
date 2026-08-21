@@ -31,8 +31,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { useAdminData, DOCUMENTO_TIPOS, DocumentoLegal } from "./hooks/useAdminData";
 import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "./EmptyState";
-import { ConfirmDialog } from "./ConfirmDialog";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 

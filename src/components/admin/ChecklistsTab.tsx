@@ -28,8 +28,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Pencil, Trash2, GripVertical } from "lucide-react";
+import { Plus, ClipboardList } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { DataTableRowActions } from "@/components/ui/DataTableRowActions";
+import { LoadingState } from "@/components/ui/LoadingState";
+import { EmptyState } from "@/components/ui/EmptyState";
 import {
   useAllChecklistItems,
   useChecklistItemsMutations,
@@ -63,6 +67,7 @@ export function ChecklistsTab() {
   const [editingItem, setEditingItem] = useState<ChecklistItem | null>(null);
   const [formData, setFormData] = useState<ChecklistFormData>(defaultFormData);
   const [selectedEtapa, setSelectedEtapa] = useState<string>("all");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const filteredItems = selectedEtapa === "all" 
     ? items 
@@ -116,13 +121,13 @@ export function ChecklistsTab() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir este item?")) return;
-    
     try {
       await deleteItem.mutateAsync(id);
       toast({ title: "Item excluído com sucesso!" });
     } catch {
       toast({ title: "Erro ao excluir", variant: "destructive" });
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -139,7 +144,7 @@ export function ChecklistsTab() {
   };
 
   if (isLoading) {
-    return <div className="p-8 text-center text-muted-foreground">Carregando...</div>;
+    return <LoadingState />;
   }
 
   return (
@@ -191,10 +196,10 @@ export function ChecklistsTab() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ChecklistTable 
-                  items={etapaItems} 
-                  onEdit={handleOpenEdit} 
-                  onDelete={handleDelete}
+                <ChecklistTable
+                  items={etapaItems}
+                  onEdit={handleOpenEdit}
+                  onDelete={setDeletingId}
                   onToggleActive={handleToggleActive}
                 />
               </CardContent>
@@ -305,6 +310,16 @@ export function ChecklistsTab() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={!!deletingId}
+        onOpenChange={(open) => !open && setDeletingId(null)}
+        title="Excluir item"
+        description="Tem certeza que deseja excluir este item de checklist?"
+        confirmLabel="Excluir"
+        variant="destructive"
+        onConfirm={() => deletingId && handleDelete(deletingId)}
+      />
     </div>
   );
 }
@@ -323,9 +338,12 @@ function ChecklistTable({
 }) {
   if (items.length === 0) {
     return (
-      <p className="text-center py-4 text-muted-foreground">
-        Nenhum item de checklist cadastrado
-      </p>
+      <EmptyState
+        icon={ClipboardList}
+        title="Nenhum item de checklist cadastrado"
+        description="Adicione o primeiro item para esta etapa."
+        size="sm"
+      />
     );
   }
 
@@ -363,19 +381,11 @@ function ChecklistTable({
               />
             </TableCell>
             <TableCell className="text-right">
-              <div className="flex justify-end gap-1">
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(item)}>
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8 text-destructive hover:text-destructive" 
-                  onClick={() => onDelete(item.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
+              <DataTableRowActions
+                className="justify-end"
+                onEdit={() => onEdit(item)}
+                onDelete={() => onDelete(item.id)}
+              />
             </TableCell>
           </TableRow>
         ))}

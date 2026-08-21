@@ -1,9 +1,11 @@
 import { useState, useMemo } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Pencil, XCircle, Package, ShoppingCart } from "lucide-react";
+import { Plus, Package, ShoppingCart, Users } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { DataTableRowActions } from "@/components/ui/DataTableRowActions";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { PageHeader } from "@/components/PageHeader";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -22,7 +24,6 @@ const Fornecedores = () => {
   } = useFornecedoresData();
 
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("todos");
   const [formOpen, setFormOpen] = useState(false);
   const [selectedFornecedor, setSelectedFornecedor] = useState<any>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -36,10 +37,9 @@ const Fornecedores = () => {
         const matchesCpfCnpj = f.cpf_cnpj?.toLowerCase().includes(searchLower);
         if (!matchesNome && !matchesCpfCnpj) return false;
       }
-      // A nova tabela clientes_fornecedores não tem campo 'ativo', então removemos esse filtro
       return true;
     });
-  }, [fornecedores, search, status]);
+  }, [fornecedores, search]);
 
   const saveFornecedorMutation = useMutation({
     mutationFn: async (fornecedor: any) => {
@@ -137,29 +137,21 @@ const Fornecedores = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Fornecedores</h1>
-          <p className="text-muted-foreground">Gerencie seus fornecedores</p>
-        </div>
-        <Button onClick={handleNew}>
-          <Plus className="h-4 w-4" />
-          Novo Fornecedor
-        </Button>
-      </div>
-
-      <FornecedoresKPIs
-        totalFornecedores={kpis.totalFornecedores}
-        fornecedoresAtivos={kpis.fornecedoresAtivos}
-        fornecedoresInativos={kpis.fornecedoresInativos}
+      <PageHeader
+        title="Fornecedores"
+        description="Gerencie seus fornecedores"
+        icon={<Users className="h-6 w-6 text-primary" />}
+        actions={
+          <Button onClick={handleNew}>
+            <Plus className="h-4 w-4 mr-2" />
+            Novo Fornecedor
+          </Button>
+        }
       />
 
-      <FornecedoresFilters
-        search={search}
-        setSearch={setSearch}
-        status={status}
-        setStatus={setStatus}
-      />
+      <FornecedoresKPIs totalFornecedores={kpis.totalFornecedores} />
+
+      <FornecedoresFilters search={search} setSearch={setSearch} />
 
       <Card>
         <CardHeader>
@@ -213,22 +205,10 @@ const Fornecedores = () => {
                         })}
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEdit(fornecedor)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleConfirmDelete(fornecedor.id)}
-                          >
-                            <XCircle className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        <DataTableRowActions
+                          onEdit={() => handleEdit(fornecedor)}
+                          onDelete={() => handleConfirmDelete(fornecedor.id)}
+                        />
                       </TableCell>
                     </TableRow>
                   );
@@ -255,20 +235,15 @@ const Fornecedores = () => {
         fornecedor={selectedFornecedor}
       />
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir este fornecedor? Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Excluir</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Confirmar exclusão"
+        description="Tem certeza que deseja excluir este fornecedor? Esta ação não pode ser desfeita."
+        confirmLabel="Excluir"
+        variant="destructive"
+        onConfirm={handleDelete}
+      />
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { Menu, MessageCircle } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserAuthMenu } from "@/components/UserAuthMenu";
@@ -7,141 +7,28 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose 
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import logoTaysa from "@/assets/logo-dra-taysa.png";
+import { ChevronDown, Home } from "lucide-react";
 import {
-  Home,
-  DollarSign,
-  FileText,
-  CreditCard,
-  TrendingUp,
-  Package,
-  Users,
-  BarChart3,
-  Target,
-  FileBarChart,
-  Kanban,
-  Calendar,
-  Heart,
-  XCircle,
-  Building2,
-  Lock,
-  History,
-  PieChart,
-  LineChart,
-  Sparkles,
-  Settings,
-  ChevronDown,
-  ClipboardList,
-  FileSignature,
-  FlaskConical,
-  Camera,
-  Pill,
-  Stethoscope,
-  type LucideIcon,
-} from "lucide-react";
-
-interface NavItem {
-  label: string;
-  to: string;
-  icon: LucideIcon;
-}
-
-interface NavModule {
-  label: string;
-  icon: LucideIcon;
-  basePath: string;
-  items: NavItem[];
-  color: string;
-}
-
-const modules: NavModule[] = [
-  {
-    label: "Financeiro",
-    icon: DollarSign,
-    basePath: "/financeiro",
-    color: "text-emerald-500",
-    items: [
-      { label: "Dashboard", to: "/financeiro", icon: Home },
-      { label: "Diário de Caixa", to: "/financeiro/diario-caixa", icon: FileText },
-      { label: "Lançamentos", to: "/financeiro/lancamentos", icon: DollarSign },
-      { label: "Contas a Pagar", to: "/financeiro/contas-pagar", icon: CreditCard },
-      { label: "Tratamentos", to: "/financeiro/tratamentos", icon: TrendingUp },
-      { label: "Estoque", to: "/financeiro/estoque", icon: Package },
-      { label: "Fornecedores", to: "/financeiro/fornecedores", icon: Users },
-      { label: "DRE", to: "/financeiro/dre", icon: BarChart3 },
-      { label: "Budget", to: "/financeiro/orcamento", icon: Target },
-      { label: "Relatórios", to: "/financeiro/relatorios", icon: FileBarChart },
-    ],
-  },
-  {
-    label: "Comercial",
-    icon: Users,
-    basePath: "/crm",
-    color: "text-cyan-500",
-    items: [
-      { label: "Pipeline", to: "/crm/pipeline", icon: Kanban },
-      { label: "Agendamentos", to: "/crm/agendamentos", icon: Calendar },
-      { label: "WhatsApp", to: "/crm/whatsapp", icon: MessageCircle },
-      { label: "Pós-venda", to: "/crm/pos-venda", icon: Heart },
-      { label: "Leads Perdidos", to: "/crm/perdidos", icon: XCircle },
-      { label: "Pacientes", to: "/crm/pacientes", icon: Users },
-    ],
-  },
-  {
-    label: "Administrativo",
-    icon: Building2,
-    basePath: "/admin",
-    color: "text-violet-500",
-    items: [
-      { label: "Usuários", to: "/admin?tab=usuarios", icon: Users },
-      { label: "LGPD", to: "/admin?tab=lgpd", icon: Lock },
-      { label: "Documentos", to: "/admin?tab=documentos", icon: FileText },
-      { label: "Auditoria", to: "/admin?tab=auditoria", icon: History },
-    ],
-  },
-  {
-    label: "BI",
-    icon: BarChart3,
-    basePath: "/bi",
-    color: "text-amber-500",
-    items: [
-      { label: "Dashboard BI", to: "/bi", icon: BarChart3 },
-      { label: "LTV / CAC", to: "/bi?tab=ltv-cac", icon: Users },
-      { label: "Marketing", to: "/bi?tab=marketing", icon: Target },
-      { label: "Tratamentos", to: "/bi?tab=tratamentos", icon: PieChart },
-      { label: "Sazonalidade", to: "/bi?tab=sazonalidade", icon: Calendar },
-      { label: "Projeções", to: "/bi?tab=projecoes", icon: LineChart },
-    ],
-  },
-  {
-    label: "Gestão Operacional",
-    icon: ClipboardList,
-    basePath: "/gestao",
-    color: "text-rose-500",
-    items: [
-      { label: "Dashboard", to: "/gestao", icon: Home },
-      { label: "Planos de Tratamento", to: "/gestao/planos-tratamento", icon: FileText },
-      { label: "Contratos", to: "/gestao/contratos", icon: FileSignature },
-      { label: "Anamneses", to: "/gestao/anamneses", icon: ClipboardList },
-      { label: "Exames", to: "/gestao/exames", icon: FlaskConical },
-      { label: "Fotos", to: "/gestao/fotos", icon: Camera },
-      { label: "Receituários", to: "/gestao/receituarios", icon: Pill },
-      { label: "Prontuários", to: "/gestao/prontuarios", icon: Stethoscope },
-    ],
-  },
-];
-
-const globalItems: NavItem[] = [
-  { label: "Assistente IA", to: "/assistente-ia", icon: Sparkles },
-  { label: "Configurações", to: "/configuracoes", icon: Settings },
-];
+  modules,
+  globalItems,
+  moduleColorClass,
+  getActiveModule,
+  isLeafActive,
+  type NavModule,
+} from "@/config/navigation";
 
 function MobileNavModule({ module, onClose }: { module: NavModule; onClose: () => void }) {
   const location = useLocation();
-  const isActive = location.pathname.startsWith(module.basePath);
+  const activeModule = getActiveModule(location.pathname);
+  const isActive = activeModule?.id === module.id;
   const [isOpen, setIsOpen] = useState(isActive);
   const Icon = module.icon;
+
+  useEffect(() => {
+    if (isActive) setIsOpen(true);
+  }, [isActive]);
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -159,7 +46,7 @@ function MobileNavModule({ module, onClose }: { module: NavModule; onClose: () =
             "h-9 w-9 rounded-lg flex items-center justify-center",
             isActive ? "bg-primary/20" : "bg-muted/60"
           )}>
-            <Icon className={cn("h-4 w-4", isActive && module.color)} />
+            <Icon className={cn("h-4 w-4", isActive && moduleColorClass[module.id])} />
           </div>
           <span>{module.label}</span>
         </div>
@@ -174,10 +61,7 @@ function MobileNavModule({ module, onClose }: { module: NavModule; onClose: () =
         <div className="ml-6 mt-1 space-y-0.5 border-l-2 border-border/50 pl-3">
           {module.items.map((item) => {
             const ItemIcon = item.icon;
-            const isItemActive =
-              location.pathname === item.to ||
-              (item.to.includes("?") &&
-                location.pathname + location.search === item.to);
+            const isItemActive = isLeafActive(location.pathname, location.search, item);
 
             return (
               <SheetClose asChild key={item.to}>
@@ -220,9 +104,9 @@ export function TopBar() {
         {/* Mobile Menu */}
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className={cn(
                 "h-10 w-10 rounded-xl",
                 "hover:bg-muted/60"
@@ -239,17 +123,11 @@ export function TopBar() {
           )}>
             <SheetHeader className="border-b border-border/40 p-5">
               <SheetTitle className="text-left">
-                <div className={cn(
-                  "inline-block p-2 rounded-xl",
-                  "bg-gradient-to-br from-primary/10 via-transparent to-accent/10",
-                  "dark:from-primary/20 dark:via-transparent dark:to-accent/20"
-                )}>
-                  <img 
-                    src={logoTaysa} 
-                    alt="Dra. Taysa Dias" 
-                    className="h-12 w-auto drop-shadow-sm dark:brightness-125 dark:contrast-110 dark:saturate-110"
-                  />
-                </div>
+                <img
+                  src={logoTaysa}
+                  alt="Dra. Taysa Dias"
+                  className="h-12 w-auto dark:brightness-125 dark:contrast-110 dark:saturate-110"
+                />
               </SheetTitle>
             </SheetHeader>
 
@@ -278,7 +156,7 @@ export function TopBar() {
               {/* Modules */}
               {modules.map((module) => (
                 <MobileNavModule
-                  key={module.basePath}
+                  key={module.id}
                   module={module}
                   onClose={() => setMobileOpen(false)}
                 />
@@ -333,24 +211,12 @@ export function TopBar() {
         </Sheet>
 
         {/* Brand */}
-        <Link to="/" className="flex items-center gap-2.5 group">
-          <div className={cn(
-            "p-1.5 rounded-lg transition-all duration-300",
-            "bg-gradient-to-br from-primary/10 via-transparent to-accent/10",
-            "dark:from-primary/20 dark:via-transparent dark:to-accent/20",
-            "group-hover:from-primary/15 group-hover:to-accent/15"
-          )}>
-            <img 
-              src={logoTaysa} 
-              alt="Dra. Taysa Dias" 
-              className={cn(
-                "h-10 w-auto transition-all duration-300",
-                "drop-shadow-sm",
-                "dark:brightness-125 dark:contrast-110 dark:saturate-110",
-                "group-hover:scale-[1.02]"
-              )}
-            />
-          </div>
+        <Link to="/" className="flex items-center gap-2.5">
+          <img
+            src={logoTaysa}
+            alt="Dra. Taysa Dias"
+            className="h-10 w-auto dark:brightness-125 dark:contrast-110 dark:saturate-110"
+          />
         </Link>
 
         {/* Actions */}

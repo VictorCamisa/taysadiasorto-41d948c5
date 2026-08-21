@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -14,17 +13,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { 
-  Search, 
-  Pill, 
-  ExternalLink,
-  Printer,
-  ChevronLeft
-} from "lucide-react";
+import { FilterBar } from "@/components/ui/FilterBar";
+import { LoadingState } from "@/components/ui/LoadingState";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { DataTableRowActions } from "@/components/ui/DataTableRowActions";
+import { Pill, ExternalLink, ChevronLeft } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 export default function ReceituariosPage() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
 
   const { data: receituarios, isLoading } = useQuery({
@@ -37,7 +35,7 @@ export default function ReceituariosPage() {
           pacientes:paciente_id (id, nome, telefone)
         `)
         .order("created_at", { ascending: false });
-      
+
       if (error) throw error;
       return data as any[];
     },
@@ -62,20 +60,9 @@ export default function ReceituariosPage() {
         />
       </div>
 
-      {/* Search */}
-      <Card className="bg-card/60 border-border/40">
-        <CardContent className="p-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por paciente ou medicamento..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <FilterBar
+        search={{ value: search, onChange: setSearch, placeholder: "Buscar por paciente ou medicamento..." }}
+      />
 
       {/* Table */}
       <Card className="bg-card/60 border-border/40">
@@ -93,22 +80,14 @@ export default function ReceituariosPage() {
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    Carregando...
-                  </TableCell>
-                </TableRow>
+                <TableRow><TableCell colSpan={6}><LoadingState /></TableCell></TableRow>
               ) : filteredReceituarios?.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    Nenhum receituário encontrado
-                  </TableCell>
-                </TableRow>
+                <TableRow><TableCell colSpan={6}><EmptyState icon={Pill} title="Nenhum receituário encontrado" description="Ajuste os filtros ou aguarde novos registros." size="sm" /></TableCell></TableRow>
               ) : (
                 filteredReceituarios?.map((receituario) => (
                   <TableRow key={receituario.id}>
                     <TableCell>
-                      <Link 
+                      <Link
                         to={`/crm/pacientes/${receituario.paciente_id}`}
                         className="font-medium text-foreground hover:text-primary transition-colors"
                       >
@@ -130,13 +109,12 @@ export default function ReceituariosPage() {
                         : "—"}
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button variant="ghost" size="icon" asChild>
-                          <Link to={`/crm/pacientes/${receituario.paciente_id}`}>
-                            <ExternalLink className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                      </div>
+                      <DataTableRowActions
+                        className="justify-end"
+                        statusActions={[
+                          { icon: ExternalLink, label: "Ver paciente", onClick: () => navigate(`/crm/pacientes/${receituario.paciente_id}`) },
+                        ]}
+                      />
                     </TableCell>
                   </TableRow>
                 ))

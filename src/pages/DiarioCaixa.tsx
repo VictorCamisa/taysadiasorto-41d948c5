@@ -10,6 +10,8 @@ import { format, startOfMonth, endOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
+import { PageHeader } from "@/components/PageHeader";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 const DiarioCaixa = () => {
   const [startDate, setStartDate] = useState(format(startOfMonth(new Date()), "yyyy-MM-dd"));
@@ -77,10 +79,11 @@ const DiarioCaixa = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-4xl font-bold">Diário de Caixa</h1>
-        <p className="text-muted-foreground mt-1">Extrato detalhado de todas as movimentações financeiras</p>
-      </div>
+      <PageHeader
+        title="Diário de Caixa"
+        description="Extrato detalhado de todas as movimentações financeiras"
+        icon={<Calendar className="h-6 w-6 text-primary" />}
+      />
 
       {/* Filtros */}
       <Card>
@@ -240,8 +243,12 @@ const DiarioCaixa = () => {
 
         {Object.keys(lancamentosPorData).length === 0 && (
           <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
-              Nenhum lançamento encontrado no período selecionado
+            <CardContent>
+              <EmptyState
+                icon={Calendar}
+                title="Nenhum lançamento encontrado"
+                description="Ajuste o período selecionado para ver outras movimentações."
+              />
             </CardContent>
           </Card>
         )}

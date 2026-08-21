@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -22,16 +21,15 @@ import {
   Target,
   Calendar,
   ChevronLeft,
-  ChevronRight,
-  ArrowUpRight,
-  ArrowDownRight,
   Wallet,
   type LucideIcon,
 } from "lucide-react";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { startOfMonth, endOfMonth, subMonths, startOfYear, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { formatCurrency, formatNumber } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
+import { KPICard } from "@/components/ui/KPICard";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 interface NavItem {
   label: string;
@@ -47,61 +45,6 @@ const financeiroNavItems: NavItem[] = [
   { label: "Estoque", to: "/financeiro/estoque", icon: Package },
   { label: "DRE", to: "/financeiro/dre", icon: BarChart3 },
 ];
-
-interface KPICardProps {
-  title: string;
-  value: string;
-  subtitle?: string;
-  icon: LucideIcon;
-  trend?: number;
-  variant?: "default" | "success" | "danger" | "warning";
-  onClick?: () => void;
-}
-
-function KPICard({ title, value, subtitle, icon: Icon, trend, variant = "default", onClick }: KPICardProps) {
-  const variantStyles = {
-    default: "bg-card/80 border-border/30",
-    success: "bg-primary/5 border-primary/20",
-    danger: "bg-destructive/5 border-destructive/20",
-    warning: "bg-accent/30 border-accent/40",
-  };
-  
-  const iconStyles = {
-    default: "bg-muted/50 text-muted-foreground",
-    success: "bg-primary/10 text-primary",
-    danger: "bg-destructive/10 text-destructive",
-    warning: "bg-accent/50 text-accent-foreground",
-  };
-
-  return (
-    <div
-      onClick={onClick}
-      className={cn(
-        "p-4 rounded-2xl border transition-all",
-        variantStyles[variant],
-        onClick && "active:scale-[0.98] cursor-pointer"
-      )}
-    >
-      <div className="flex items-start justify-between mb-3">
-        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", iconStyles[variant])}>
-          <Icon className="h-5 w-5" />
-        </div>
-        {trend !== undefined && (
-          <Badge variant="outline" className={cn(
-            "text-xs font-medium",
-            trend >= 0 ? "text-primary border-primary/30" : "text-destructive border-destructive/30"
-          )}>
-            {trend >= 0 ? <ArrowUpRight className="h-3 w-3 mr-0.5" /> : <ArrowDownRight className="h-3 w-3 mr-0.5" />}
-            {Math.abs(trend)}%
-          </Badge>
-        )}
-      </div>
-      <p className="text-xs text-muted-foreground mb-0.5">{title}</p>
-      <p className="text-xl font-bold text-foreground">{value}</p>
-      {subtitle && <p className="text-[10px] text-muted-foreground mt-0.5">{subtitle}</p>}
-    </div>
-  );
-}
 
 interface ListItemProps {
   title: string;
@@ -240,27 +183,31 @@ export function MobileDashboard() {
           ) : (
             <>
               <KPICard
-                title="Receita"
+                label="Receita"
                 value={formatCurrency(kpis.receitaTotal)}
                 icon={TrendingUp}
-                variant="success"
+                tone="success"
+                size="sm"
               />
               <KPICard
-                title="Despesas"
+                label="Despesas"
                 value={formatCurrency(kpis.despesaTotal)}
                 icon={TrendingDown}
-                variant="danger"
+                tone="danger"
+                size="sm"
               />
               <KPICard
-                title="Lucro Líquido"
+                label="Lucro Líquido"
                 value={formatCurrency(kpis.lucroLiquido)}
                 icon={Wallet}
-                variant={kpis.lucroLiquido >= 0 ? "success" : "danger"}
+                tone={kpis.lucroLiquido >= 0 ? "success" : "danger"}
+                size="sm"
               />
               <KPICard
-                title="Ticket Médio"
+                label="Ticket Médio"
                 value={formatCurrency(kpis.ticketMedio)}
                 icon={Target}
+                size="sm"
               />
             </>
           )}
@@ -320,9 +267,7 @@ export function MobileDashboard() {
                 />
               ))
             ) : (
-              <div className="py-8 text-center text-muted-foreground text-sm">
-                Nenhum tratamento no período
-              </div>
+              <EmptyState icon={TrendingUp} title="Nenhum tratamento no período" description="Ajuste o período selecionado." size="sm" />
             )}
           </div>
         </div>
@@ -357,9 +302,7 @@ export function MobileDashboard() {
                 />
               ))
             ) : (
-              <div className="py-8 text-center text-muted-foreground text-sm">
-                Nenhuma origem no período
-              </div>
+              <EmptyState icon={BarChart3} title="Nenhuma origem no período" description="Ajuste o período selecionado." size="sm" />
             )}
           </div>
         </div>

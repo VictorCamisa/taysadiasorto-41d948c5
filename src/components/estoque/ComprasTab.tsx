@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus } from "lucide-react";
+import { Plus, ShoppingCart } from "lucide-react";
 import { CompraForm } from "./CompraForm";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 interface ComprasTabProps {
   compras: any[];
@@ -53,8 +54,8 @@ export const ComprasTab = ({
             <TableBody>
               {compras.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground">
-                    Nenhuma compra cadastrada
+                  <TableCell colSpan={7}>
+                    <EmptyState icon={ShoppingCart} title="Nenhuma compra cadastrada" description="Registre a primeira compra de fornecedor." size="sm" />
                   </TableCell>
                 </TableRow>
               ) : (

@@ -2,10 +2,9 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Plus, Pencil, XCircle } from "lucide-react";
+import { Plus, Settings, Tag, Wallet, CreditCard, Target } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -14,6 +13,10 @@ import { CategoriaForm } from "@/components/configuracoes/CategoriaForm";
 import { ContaForm } from "@/components/configuracoes/ContaForm";
 import { FormaPagamentoForm } from "@/components/configuracoes/FormaPagamentoForm";
 import { OrigemForm } from "@/components/configuracoes/OrigemForm";
+import { PageHeader } from "@/components/PageHeader";
+import { DataTableRowActions } from "@/components/ui/DataTableRowActions";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 const Configuracoes = () => {
   const {
@@ -202,12 +205,11 @@ const Configuracoes = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Configurações</h1>
-        <p className="text-muted-foreground">
-          Configure categorias, contas, formas de pagamento e origens
-        </p>
-      </div>
+      <PageHeader
+        title="Configurações"
+        description="Configure categorias, contas, formas de pagamento e origens"
+        icon={<Settings className="h-6 w-6 text-primary" />}
+      />
 
       <Tabs defaultValue="categorias" className="space-y-4">
         <TabsList>
@@ -248,8 +250,8 @@ const Configuracoes = () => {
                 <TableBody>
                   {categorias.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center text-muted-foreground">
-                        Nenhuma categoria cadastrada
+                      <TableCell colSpan={4}>
+                        <EmptyState icon={Tag} title="Nenhuma categoria cadastrada" description="Cadastre a primeira categoria financeira." size="sm" />
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -278,28 +280,16 @@ const Configuracoes = () => {
                             )}
                           </TableCell>
                           <TableCell>
-                            <div className="flex gap-2">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                  setSelectedCategoria(categoria);
-                                  setCategoriaFormOpen(true);
-                                }}
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                  setItemToDelete({ id: categoria.id, table: "categorias" });
-                                  setDeleteDialogOpen(true);
-                                }}
-                              >
-                                <XCircle className="h-4 w-4" />
-                              </Button>
-                            </div>
+                            <DataTableRowActions
+                              onEdit={() => {
+                                setSelectedCategoria(categoria);
+                                setCategoriaFormOpen(true);
+                              }}
+                              onDelete={() => {
+                                setItemToDelete({ id: categoria.id, table: "categorias" });
+                                setDeleteDialogOpen(true);
+                              }}
+                            />
                           </TableCell>
                         </TableRow>
                       ))
@@ -342,8 +332,8 @@ const Configuracoes = () => {
                 <TableBody>
                   {contas.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center text-muted-foreground">
-                        Nenhuma conta cadastrada
+                      <TableCell colSpan={5}>
+                        <EmptyState icon={Wallet} title="Nenhuma conta cadastrada" description="Cadastre a primeira conta financeira." size="sm" />
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -364,28 +354,16 @@ const Configuracoes = () => {
                           })}
                         </TableCell>
                         <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => {
-                                setSelectedConta(conta);
-                                setContaFormOpen(true);
-                              }}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => {
-                                setItemToDelete({ id: conta.id, table: "contas_financeiras" });
-                                setDeleteDialogOpen(true);
-                              }}
-                            >
-                              <XCircle className="h-4 w-4" />
-                            </Button>
-                          </div>
+                          <DataTableRowActions
+                            onEdit={() => {
+                              setSelectedConta(conta);
+                              setContaFormOpen(true);
+                            }}
+                            onDelete={() => {
+                              setItemToDelete({ id: conta.id, table: "contas_financeiras" });
+                              setDeleteDialogOpen(true);
+                            }}
+                          />
                         </TableCell>
                       </TableRow>
                     ))
@@ -427,8 +405,8 @@ const Configuracoes = () => {
                 <TableBody>
                   {formasPagamento.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center text-muted-foreground">
-                        Nenhuma forma de pagamento cadastrada
+                      <TableCell colSpan={4}>
+                        <EmptyState icon={CreditCard} title="Nenhuma forma de pagamento cadastrada" description="Cadastre a primeira forma de pagamento." size="sm" />
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -438,28 +416,16 @@ const Configuracoes = () => {
                         <TableCell>{Number(forma.taxa_percentual || 0).toFixed(2)}%</TableCell>
                         <TableCell>{forma.dias_recebimento || 0} dias</TableCell>
                         <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => {
-                                setSelectedForma(forma);
-                                setFormaFormOpen(true);
-                              }}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => {
-                                setItemToDelete({ id: forma.id, table: "formas_pagamento" });
-                                setDeleteDialogOpen(true);
-                              }}
-                            >
-                              <XCircle className="h-4 w-4" />
-                            </Button>
-                          </div>
+                          <DataTableRowActions
+                            onEdit={() => {
+                              setSelectedForma(forma);
+                              setFormaFormOpen(true);
+                            }}
+                            onDelete={() => {
+                              setItemToDelete({ id: forma.id, table: "formas_pagamento" });
+                              setDeleteDialogOpen(true);
+                            }}
+                          />
                         </TableCell>
                       </TableRow>
                     ))
@@ -500,8 +466,8 @@ const Configuracoes = () => {
                 <TableBody>
                   {origens.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={3} className="text-center text-muted-foreground">
-                        Nenhuma origem cadastrada
+                      <TableCell colSpan={3}>
+                        <EmptyState icon={Target} title="Nenhuma origem cadastrada" description="Cadastre a primeira origem de clientes." size="sm" />
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -510,28 +476,16 @@ const Configuracoes = () => {
                         <TableCell className="font-medium">{origem.nome}</TableCell>
                         <TableCell className="text-muted-foreground">{origem.descricao || "-"}</TableCell>
                         <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => {
-                                setSelectedOrigem(origem);
-                                setOrigemFormOpen(true);
-                              }}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => {
-                                setItemToDelete({ id: origem.id, table: "origens" });
-                                setDeleteDialogOpen(true);
-                              }}
-                            >
-                              <XCircle className="h-4 w-4" />
-                            </Button>
-                          </div>
+                          <DataTableRowActions
+                            onEdit={() => {
+                              setSelectedOrigem(origem);
+                              setOrigemFormOpen(true);
+                            }}
+                            onDelete={() => {
+                              setItemToDelete({ id: origem.id, table: "origens" });
+                              setDeleteDialogOpen(true);
+                            }}
+                          />
                         </TableCell>
                       </TableRow>
                     ))
@@ -584,21 +538,15 @@ const Configuracoes = () => {
         onSave={(data) => saveOrigemMutation.mutate(data)}
       />
 
-      {/* Delete Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Excluir</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Confirmar Exclusão"
+        description="Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita."
+        confirmLabel="Excluir"
+        variant="destructive"
+        onConfirm={handleDelete}
+      />
     </div>
   );
 };

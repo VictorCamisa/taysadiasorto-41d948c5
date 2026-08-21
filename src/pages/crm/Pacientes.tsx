@@ -3,9 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, UserX, UserCheck, FileText, ClipboardList, Eye } from "lucide-react";
+import { Plus, ClipboardList, FileText, Pencil } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,7 +15,11 @@ import { PacientesFilters } from "@/components/crm/PacientesFilters";
 import { PacienteForm } from "@/components/crm/PacienteForm";
 import { AnamneseForm } from "@/components/crm/AnamneseForm";
 import { PageHeader } from "@/components/PageHeader";
-import { Users } from "lucide-react";
+import { DataTableRowActions } from "@/components/ui/DataTableRowActions";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { LoadingState } from "@/components/ui/LoadingState";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Users, UserX, UserCheck } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Tables } from "@/integrations/supabase/types";
@@ -240,9 +243,7 @@ export default function Pacientes() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Carregando...
-            </div>
+            <LoadingState />
           ) : (
             <Table>
               <TableHeader>
@@ -259,8 +260,8 @@ export default function Pacientes() {
               <TableBody>
                 {filteredPacientes.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground">
-                      Nenhum paciente encontrado
+                    <TableCell colSpan={7}>
+                      <EmptyState icon={Users} title="Nenhum paciente encontrado" description="Ajuste os filtros ou cadastre um novo paciente." size="sm" />
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -289,45 +290,20 @@ export default function Pacientes() {
                           {paciente.ativo !== false ? "Ativo" : "Inativo"}
                         </Badge>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => navigate(`/crm/pacientes/${paciente.id}`)}
-                            title="Ficha 360°"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleOpenAnamneses(paciente)}
-                            title="Anamneses"
-                          >
-                            <ClipboardList className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEdit(paciente)}
-                            title="Editar"
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleToggleAtivo(paciente)}
-                            title={paciente.ativo !== false ? "Desativar" : "Ativar"}
-                          >
-                            {paciente.ativo !== false ? (
-                              <UserX className="h-4 w-4" />
-                            ) : (
-                              <UserCheck className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </div>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <DataTableRowActions
+                          onView={() => navigate(`/crm/pacientes/${paciente.id}`)}
+                          viewLabel="Ficha 360°"
+                          onEdit={() => handleEdit(paciente)}
+                          statusActions={[
+                            { icon: ClipboardList, label: "Anamneses", onClick: () => handleOpenAnamneses(paciente) },
+                            {
+                              icon: paciente.ativo !== false ? UserX : UserCheck,
+                              label: paciente.ativo !== false ? "Desativar" : "Ativar",
+                              onClick: () => handleToggleAtivo(paciente),
+                            },
+                          ]}
+                        />
                       </TableCell>
                     </TableRow>
                   ))
@@ -354,26 +330,19 @@ export default function Pacientes() {
         paciente={selectedPaciente}
       />
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {pacienteToToggle?.ativo !== false ? "Desativar paciente" : "Ativar paciente"}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {pacienteToToggle?.ativo !== false
-                ? "O paciente será marcado como inativo. Você pode reativá-lo a qualquer momento."
-                : "O paciente será reativado e aparecerá na lista de pacientes ativos."}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmToggleAtivo}>
-              {pacienteToToggle?.ativo !== false ? "Desativar" : "Ativar"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title={pacienteToToggle?.ativo !== false ? "Desativar paciente" : "Ativar paciente"}
+        description={
+          pacienteToToggle?.ativo !== false
+            ? "O paciente será marcado como inativo. Você pode reativá-lo a qualquer momento."
+            : "O paciente será reativado e aparecerá na lista de pacientes ativos."
+        }
+        confirmLabel={pacienteToToggle?.ativo !== false ? "Desativar" : "Ativar"}
+        variant={pacienteToToggle?.ativo !== false ? "destructive" : "default"}
+        onConfirm={confirmToggleAtivo}
+      />
 
       {/* Modal de lista de anamneses */}
       <Dialog open={anamneseListOpen} onOpenChange={setAnamneseListOpen}>
@@ -389,9 +358,7 @@ export default function Pacientes() {
               </Button>
             </div>
             {anamneses.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                Nenhuma anamnese registrada para este paciente
-              </div>
+              <EmptyState icon={FileText} title="Nenhuma anamnese registrada" description="Registre a primeira anamnese deste paciente." size="sm" />
             ) : (
               <div className="space-y-2">
                 {anamneses.map((anamnese) => (

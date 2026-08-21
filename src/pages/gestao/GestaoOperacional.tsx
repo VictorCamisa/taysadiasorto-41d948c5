@@ -1,15 +1,13 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
-import { 
-  FileText, 
-  ClipboardList, 
-  FlaskConical, 
-  Camera, 
-  Pill, 
+import {
+  FileText,
+  ClipboardList,
+  FlaskConical,
+  Camera,
+  Pill,
   Stethoscope,
   FileSignature,
   TrendingUp,
-  AlertCircle,
   CheckCircle2,
   Clock,
   ArrowRight
@@ -17,8 +15,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/PageHeader";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { KPICard } from "@/components/ui/KPICard";
 import { cn } from "@/lib/utils";
 
 interface ProcessCardProps {
@@ -225,66 +222,15 @@ export default function GestaoOperacional() {
     <div className="space-y-8">
       <PageHeader
         title="Gestão Operacional"
-        description="Visão macro de todos os processos clínicos"
+        description="Visão agregada entre todos os pacientes — fila de acompanhamento dos processos clínicos"
       />
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="bg-card/60 dark:bg-card/30 border-border/40">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <TrendingUp className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{counts?.totalPacientes || 0}</p>
-                <p className="text-xs text-muted-foreground">Pacientes Ativos</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card/60 dark:bg-card/30 border-border/40">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                <FileText className="h-5 w-5 text-blue-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{totalProcessos}</p>
-                <p className="text-xs text-muted-foreground">Total Processos</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card/60 dark:bg-card/30 border-border/40">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                <Clock className="h-5 w-5 text-amber-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{totalPendentes}</p>
-                <p className="text-xs text-muted-foreground">Pendentes</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card/60 dark:bg-card/30 border-border/40">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{totalCompletos}</p>
-                <p className="text-xs text-muted-foreground">Completos</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <KPICard label="Pacientes Ativos" value={counts?.totalPacientes || 0} icon={TrendingUp} />
+        <KPICard label="Total Processos" value={totalProcessos} icon={FileText} />
+        <KPICard label="Pendentes" value={totalPendentes} icon={Clock} tone="warning" />
+        <KPICard label="Completos" value={totalCompletos} icon={CheckCircle2} tone="success" />
       </div>
 
       {/* Processes Grid */}

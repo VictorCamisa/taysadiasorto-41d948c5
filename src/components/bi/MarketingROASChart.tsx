@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from "recharts";
 import { formatCurrency } from "@/lib/utils";
-import { BIKPICard } from "./BIKPICard";
+import { KPICard } from "@/components/ui/KPICard";
 import { Target, TrendingUp, DollarSign, Percent } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -61,33 +61,32 @@ export function MarketingROASChart({
     <div className="space-y-4">
       {/* KPI Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <BIKPICard
-          title="Investimento Marketing"
+        <KPICard
+          label="Investimento Marketing"
           value={formatCurrency(custoMarketing)}
           subtitle="Total no período"
           icon={DollarSign}
-          variant="warning"
+          tone="warning"
         />
-        <BIKPICard
-          title="ROAS"
+        <KPICard
+          label="ROAS"
           value={`${roas.toFixed(1)}x`}
           subtitle={roas >= 3 ? 'Excelente' : roas >= 2 ? 'Bom' : 'Atenção'}
           icon={TrendingUp}
-          variant={roas >= 3 ? 'success' : roas >= 2 ? 'warning' : 'danger'}
+          tone={roas >= 3 ? 'success' : roas >= 2 ? 'warning' : 'danger'}
         />
-        <BIKPICard
-          title="Taxa Conversão"
+        <KPICard
+          label="Taxa Conversão"
           value={`${taxaConversaoGeral.toFixed(1)}%`}
           subtitle="Leads para clientes"
           icon={Percent}
-          variant={taxaConversaoGeral >= 25 ? 'success' : taxaConversaoGeral >= 15 ? 'warning' : 'danger'}
+          tone={taxaConversaoGeral >= 25 ? 'success' : taxaConversaoGeral >= 15 ? 'warning' : 'danger'}
         />
-        <BIKPICard
-          title="Total Leads"
+        <KPICard
+          label="Total Leads"
           value={leadsTotal.toLocaleString()}
           subtitle="Gerados no período"
           icon={Target}
-          variant="bi"
         />
       </div>
 

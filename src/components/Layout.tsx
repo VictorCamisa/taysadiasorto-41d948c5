@@ -2,7 +2,6 @@ import { useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { AppSidebar } from "@/components/AppSidebar";
 import { TopBar } from "@/components/TopBar";
-import { ModuleNav } from "@/components/ModuleNav";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserAuthMenu } from "@/components/UserAuthMenu";
 import { MobileBottomNav } from "@/components/mobile/MobileBottomNav";
@@ -13,21 +12,12 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
-// Routes where ModuleNav should be shown
-const moduleRoutes = ["/financeiro", "/crm", "/admin", "/bi", "/gestao"];
-
-function shouldShowModuleNav(pathname: string): boolean {
-  return moduleRoutes.some((route) => pathname.startsWith(route));
-}
-
 export function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const isMobile = useIsMobile();
   const isAssistenteIA = location.pathname === "/assistente-ia";
   const isWhatsApp = location.pathname === "/crm/whatsapp";
   const isFullHeightPage = isAssistenteIA || isWhatsApp;
-  const showModuleNav = shouldShowModuleNav(location.pathname) && !isWhatsApp;
-  const isHome = location.pathname === "/";
 
   // Mobile Layout - completely different structure
   if (isMobile) {
@@ -65,21 +55,9 @@ export function Layout({ children }: LayoutProps) {
   // Desktop Layout - original structure
   return (
     <div className={cn(
-      "flex w-full overflow-hidden relative",
+      "flex w-full overflow-hidden relative bg-background",
       isFullHeightPage ? "h-screen" : "min-h-screen"
     )}>
-      {/* Adaptive Background */}
-      <div className="fixed inset-0 -z-10">
-        {/* Light Mode Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-muted/20 dark:hidden" />
-        
-        {/* Dark Mode Background - Minimal */}
-        <div className="hidden dark:block absolute inset-0">
-          <div className="absolute inset-0 bg-background" />
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/[0.02] rounded-full blur-[100px]" />
-        </div>
-      </div>
-
       {/* Desktop Sidebar */}
       <div className="hidden lg:flex flex-shrink-0">
         <AppSidebar />
@@ -94,22 +72,13 @@ export function Layout({ children }: LayoutProps) {
         <TopBar />
 
         {/* Desktop Top Actions */}
-        <header className={cn(
-          "hidden lg:flex h-16 items-center justify-end gap-4 px-8",
-          "border-b transition-all duration-300",
-          "bg-background/60 dark:bg-background/40",
-          "backdrop-blur-xl",
-          "border-border/40 dark:border-border/20"
-        )}>
+        <header className="hidden lg:flex h-16 items-center justify-end gap-4 px-8 border-b border-border bg-background">
           <div className="flex items-center gap-3">
             <ThemeToggle />
             <div className="w-px h-6 bg-border/50" />
             <UserAuthMenu />
           </div>
         </header>
-
-        {/* Module Navigation */}
-        {showModuleNav && <ModuleNav />}
 
         {/* Main content */}
         <main

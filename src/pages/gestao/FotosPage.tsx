@@ -3,18 +3,16 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/PageHeader";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Search, 
-  Camera, 
+import { FilterBar } from "@/components/ui/FilterBar";
+import { LoadingState } from "@/components/ui/LoadingState";
+import { EmptyState } from "@/components/ui/EmptyState";
+import {
+  Camera,
   ExternalLink,
-  Filter,
   ChevronLeft,
-  Image
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -68,45 +66,28 @@ export default function FotosPage() {
         />
       </div>
 
-      {/* Filters */}
-      <Card className="bg-card/60 border-border/40">
-        <CardContent className="p-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por paciente..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={categoriaFilter} onValueChange={setCategoriaFilter}>
-              <SelectTrigger className="w-full md:w-48">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Categoria" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas as categorias</SelectItem>
-                <SelectItem value="antes">Antes</SelectItem>
-                <SelectItem value="depois">Depois</SelectItem>
-                <SelectItem value="evolucao">Evolução</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+      <FilterBar
+        search={{ value: search, onChange: setSearch, placeholder: "Buscar por paciente..." }}
+        filters={
+          <Select value={categoriaFilter} onValueChange={setCategoriaFilter}>
+            <SelectTrigger className="w-full md:w-48">
+              <SelectValue placeholder="Categoria" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas as categorias</SelectItem>
+              <SelectItem value="antes">Antes</SelectItem>
+              <SelectItem value="depois">Depois</SelectItem>
+              <SelectItem value="evolucao">Evolução</SelectItem>
+            </SelectContent>
+          </Select>
+        }
+      />
 
       {/* Gallery Grid */}
       {isLoading ? (
-        <div className="text-center py-8 text-muted-foreground">Carregando...</div>
+        <LoadingState />
       ) : filteredFotos?.length === 0 ? (
-        <Card className="bg-card/60 border-border/40">
-          <CardContent className="py-12 text-center text-muted-foreground">
-            <Camera className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Nenhuma foto encontrada</p>
-          </CardContent>
-        </Card>
+        <EmptyState icon={Camera} title="Nenhuma foto encontrada" description="Ajuste os filtros ou aguarde novos registros." />
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {filteredFotos?.map((foto) => (

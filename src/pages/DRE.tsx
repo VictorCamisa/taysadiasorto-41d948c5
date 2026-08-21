@@ -1,16 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  ChevronDown, 
+import { KPICard } from "@/components/ui/KPICard";
+import {
+  TrendingUp,
+  TrendingDown,
+  ChevronDown,
   ChevronRight,
   Calendar,
-  ArrowUpRight,
-  ArrowDownRight
 } from "lucide-react";
 import { useState } from "react";
 import { useDREGerencial } from "@/hooks/useDREGerencial";
@@ -35,76 +33,6 @@ const formatCurrency = (value: number, compact = false) => {
 };
 
 const formatPercent = (value: number) => `${value.toFixed(1)}%`;
-
-// ========== KPI CARD ==========
-interface KPICardProps {
-  title: string;
-  value: number;
-  percent?: number;
-  trend?: number;
-  variant?: "default" | "success" | "warning" | "info";
-}
-
-const KPICard = ({ title, value, percent, trend, variant = "default" }: KPICardProps) => {
-  const isPositive = value >= 0;
-  
-  const variantStyles = {
-    default: "bg-card",
-    success: "bg-emerald-500/5 dark:bg-emerald-500/10",
-    warning: "bg-amber-500/5 dark:bg-amber-500/10",
-    info: "bg-blue-500/5 dark:bg-blue-500/10",
-  };
-
-  const valueStyles = {
-    default: isPositive ? "text-foreground" : "text-destructive",
-    success: "text-emerald-600 dark:text-emerald-400",
-    warning: "text-amber-600 dark:text-amber-400",
-    info: "text-blue-600 dark:text-blue-400",
-  };
-
-  return (
-    <div className={cn(
-      "relative overflow-hidden rounded-xl border border-border/50 p-5 transition-all hover:shadow-md hover:border-border",
-      variantStyles[variant]
-    )}>
-      <div className="flex items-start justify-between">
-        <div className="space-y-2">
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            {title}
-          </p>
-          <p className={cn("text-2xl font-bold tracking-tight", valueStyles[variant])}>
-            {formatCurrency(value)}
-          </p>
-          {percent !== undefined && (
-            <Badge 
-              variant="secondary" 
-              className={cn(
-                "text-xs font-medium",
-                percent >= 0 
-                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20" 
-                  : "bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20"
-              )}
-            >
-              {formatPercent(percent)} margem
-            </Badge>
-          )}
-        </div>
-        {trend !== undefined && (
-          <div className={cn(
-            "flex h-8 w-8 items-center justify-center rounded-full",
-            trend >= 0 ? "bg-emerald-500/10" : "bg-red-500/10"
-          )}>
-            {trend >= 0 ? (
-              <ArrowUpRight className="h-4 w-4 text-emerald-500" />
-            ) : (
-              <ArrowDownRight className="h-4 w-4 text-red-500" />
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
 
 // ========== DRE ROW TYPES ==========
 type RowType = "header" | "revenue" | "expense" | "subtotal" | "total";
@@ -311,28 +239,26 @@ const DRE = () => {
       {/* KPIs */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KPICard
-          title="Receita Líquida"
-          value={totais?.receitaLiquida || 0}
-          trend={1}
-          variant="default"
+          label="Receita Líquida"
+          value={formatCurrency(totais?.receitaLiquida || 0)}
         />
         <KPICard
-          title="Lucro Bruto"
-          value={totais?.lucroBruto || 0}
-          percent={totais?.margemBruta}
-          variant="success"
+          label="Lucro Bruto"
+          value={formatCurrency(totais?.lucroBruto || 0)}
+          subtitle={totais?.margemBruta !== undefined ? `${formatPercent(totais.margemBruta)} margem` : undefined}
+          tone="success"
         />
         <KPICard
-          title="EBIT"
-          value={totais?.resultadoOperacional || 0}
-          percent={totais?.margemOperacional}
-          variant="info"
+          label="EBIT"
+          value={formatCurrency(totais?.resultadoOperacional || 0)}
+          subtitle={totais?.margemOperacional !== undefined ? `${formatPercent(totais.margemOperacional)} margem` : undefined}
+          tone="info"
         />
         <KPICard
-          title="Lucro Líquido"
-          value={totais?.lucroLiquido || 0}
-          percent={totais?.margemLiquida}
-          variant={(totais?.lucroLiquido || 0) >= 0 ? "success" : "warning"}
+          label="Lucro Líquido"
+          value={formatCurrency(totais?.lucroLiquido || 0)}
+          subtitle={totais?.margemLiquida !== undefined ? `${formatPercent(totais.margemLiquida)} margem` : undefined}
+          tone={(totais?.lucroLiquido || 0) >= 0 ? "success" : "warning"}
         />
       </div>
 

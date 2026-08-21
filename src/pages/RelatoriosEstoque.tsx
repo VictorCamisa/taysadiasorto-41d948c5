@@ -1,9 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { Download, Package } from "lucide-react";
 import { useEstoqueData } from "@/components/estoque/hooks/useEstoqueData";
 import { formatCurrency, formatNumber } from "@/lib/utils";
+import { PageHeader } from "@/components/PageHeader";
 
 const RelatoriosEstoque = () => {
   const { produtos, compras, kpis } = useEstoqueData();
@@ -28,10 +29,11 @@ const RelatoriosEstoque = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Relatórios do Estoque</h1>
-        <p className="text-muted-foreground">Análises e relatórios completos</p>
-      </div>
+      <PageHeader
+        title="Relatórios do Estoque"
+        description="Análises e relatórios completos"
+        icon={<Package className="h-6 w-6 text-primary" />}
+      />
 
       <Tabs defaultValue="valor" className="space-y-4">
         <TabsList>

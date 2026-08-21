@@ -181,7 +181,12 @@ export default function FichaPaciente() {
             </Avatar>
 
             <div className="flex-1 space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Prontuário individual
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 -mt-2">
                 <h1 className="text-2xl font-bold">{paciente.nome}</h1>
                 <Badge
                   variant={paciente.ativo !== false ? "default" : "secondary"}

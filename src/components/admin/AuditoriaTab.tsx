@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/select";
 import { useAdminData, AuditLog } from "./hooks/useAdminData";
 import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "./EmptyState";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useState, useMemo } from "react";

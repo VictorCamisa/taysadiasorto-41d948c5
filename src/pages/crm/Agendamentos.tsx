@@ -4,7 +4,6 @@ import { ptBR } from "date-fns/locale";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar, Search, Phone, Clock, User, X, ChevronLeft, ChevronRight, Plus, List, CalendarDays } from "lucide-react";
+import { Calendar, Phone, Clock, User, X, ChevronLeft, ChevronRight, Plus, List, CalendarDays } from "lucide-react";
 import {
   useCRMAgendamentos,
   useTratamentos,
@@ -38,6 +37,9 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { AgendamentoForm } from "@/components/crm/AgendamentoForm";
 import { toast } from "@/hooks/use-toast";
+import { FilterBar } from "@/components/ui/FilterBar";
+import { LoadingState } from "@/components/ui/LoadingState";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function Agendamentos() {
   const navigate = useNavigate();
@@ -161,6 +163,12 @@ export default function Agendamentos() {
         title="Agendamentos"
         description="Gerencie todos os agendamentos de procedimentos"
         icon={<Calendar className="h-6 w-6 text-primary" />}
+        actions={
+          <Button onClick={() => handleNewAgendamento()}>
+            <Plus className="h-4 w-4 mr-2" />
+            Novo Agendamento
+          </Button>
+        }
       />
 
       {/* KPIs */}
@@ -211,41 +219,27 @@ export default function Agendamentos() {
 
       {/* Tabs para alternar visualização */}
       <Tabs value={activeView} onValueChange={(v) => setActiveView(v as "lista" | "calendario")}>
-        <div className="flex items-center justify-between">
-          <TabsList>
-            <TabsTrigger value="lista" className="flex items-center gap-2">
-              <List className="h-4 w-4" />
-              Lista
-            </TabsTrigger>
-            <TabsTrigger value="calendario" className="flex items-center gap-2">
-              <CalendarDays className="h-4 w-4" />
-              Calendário
-            </TabsTrigger>
-          </TabsList>
-          
-          {activeView === "calendario" && (
-            <Button onClick={() => handleNewAgendamento()}>
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Agendamento
-            </Button>
-          )}
-        </div>
+        <TabsList>
+          <TabsTrigger value="lista" className="flex items-center gap-2">
+            <List className="h-4 w-4" />
+            Lista
+          </TabsTrigger>
+          <TabsTrigger value="calendario" className="flex items-center gap-2">
+            <CalendarDays className="h-4 w-4" />
+            Calendário
+          </TabsTrigger>
+        </TabsList>
 
         {/* Vista de Lista */}
         <TabsContent value="lista" className="space-y-4">
-          {/* Filtros */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Buscar por paciente ou tratamento..."
-                    className="pl-9"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
+          <FilterBar
+            search={{
+              value: searchTerm,
+              onChange: setSearchTerm,
+              placeholder: "Buscar por paciente ou tratamento...",
+            }}
+            filters={
+              <>
                 <Select value={selectedStatus} onValueChange={setSelectedStatus}>
                   <SelectTrigger className="w-full md:w-48">
                     <SelectValue placeholder="Status" />
@@ -273,19 +267,21 @@ export default function Agendamentos() {
                     Limpar
                   </Button>
                 )}
-              </div>
-            </CardContent>
-          </Card>
+              </>
+            }
+          />
 
           {/* Tabela */}
           <Card>
             <CardContent className="pt-6">
               {isLoading ? (
-                <p className="text-center py-8 text-muted-foreground">Carregando...</p>
+                <LoadingState />
               ) : agendamentos.length === 0 ? (
-                <p className="text-center py-8 text-muted-foreground">
-                  Nenhum agendamento encontrado
-                </p>
+                <EmptyState
+                  icon={Calendar}
+                  title="Nenhum agendamento encontrado"
+                  description="Ajuste os filtros ou crie um novo agendamento."
+                />
               ) : (
                 <Table>
                   <TableHeader>
@@ -406,13 +402,6 @@ export default function Agendamentos() {
                     hasAppointment: "bg-primary/20 font-bold",
                   }}
                 />
-                <Button
-                  className="w-full mt-4"
-                  onClick={() => handleNewAgendamento(selectedDate)}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Novo Agendamento
-                </Button>
               </CardContent>
             </Card>
 
@@ -430,9 +419,7 @@ export default function Agendamentos() {
               </CardHeader>
               <CardContent>
                 {isLoading ? (
-                  <div className="py-8 text-center text-muted-foreground">
-                    Carregando...
-                  </div>
+                  <LoadingState />
                 ) : selectedDayAgendamentos.length === 0 ? (
                   <div className="py-8 text-center text-muted-foreground">
                     <p>Nenhum agendamento para este dia</p>
