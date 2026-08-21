@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Filter, Pencil, Trash2, RefreshCw, Calculator } from "lucide-react";
+import { Plus, DollarSign } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 import {
@@ -25,9 +25,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
+import { PageHeader } from "@/components/PageHeader";
+import { FilterBar } from "@/components/ui/FilterBar";
+import { DataTableRowActions } from "@/components/ui/DataTableRowActions";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 const Lancamentos = () => {
   const [startDate, setStartDate] = useState(format(startOfMonth(new Date()), "yyyy-MM-dd"));
@@ -48,6 +52,7 @@ const Lancamentos = () => {
     origem_id: "",
     status: "pago" as string,
   });
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
 
@@ -279,9 +284,7 @@ const Lancamentos = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Tem certeza que deseja excluir este lançamento?")) {
-      deleteMutation.mutate(id);
-    }
+    setDeleteId(id);
   };
 
   const getTipoColor = (tipo: string) => {
@@ -309,21 +312,23 @@ const Lancamentos = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Lançamentos Financeiros</h1>
-          <p className="text-muted-foreground">Gerencie todas as movimentações financeiras</p>
-        </div>
-        <Dialog open={dialogOpen} onOpenChange={(open) => {
-          setDialogOpen(open);
-          if (!open) resetForm();
-        }}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Lançamento
-            </Button>
-          </DialogTrigger>
+      <Dialog open={dialogOpen} onOpenChange={(open) => {
+        setDialogOpen(open);
+        if (!open) resetForm();
+      }}>
+        <PageHeader
+          title="Lançamentos Financeiros"
+          description="Gerencie todas as movimentações financeiras"
+          icon={<DollarSign className="h-6 w-6 text-primary" />}
+          actions={
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Lançamento
+              </Button>
+            </DialogTrigger>
+          }
+        />
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingId ? "Editar" : "Novo"} Lançamento</DialogTitle>
@@ -548,39 +553,23 @@ const Lancamentos = () => {
               </div>
             </form>
           </DialogContent>
-        </Dialog>
-      </div>
+      </Dialog>
 
-      {/* Filtros */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Filtros
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
-            <div>
+      <FilterBar
+        filters={
+          <>
+            <div className="space-y-1.5">
               <Label>Data Inicial</Label>
-              <Input 
-                type="date" 
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
+              <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-[160px]" />
             </div>
-            <div>
+            <div className="space-y-1.5">
               <Label>Data Final</Label>
-              <Input 
-                type="date" 
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
+              <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-[160px]" />
             </div>
-            <div>
+            <div className="space-y-1.5">
               <Label>Tipo</Label>
               <Select value={tipoFiltro} onValueChange={setTipoFiltro}>
-                <SelectTrigger>
+                <SelectTrigger className="w-[180px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -591,9 +580,9 @@ const Lancamentos = () => {
                 </SelectContent>
               </Select>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </>
+        }
+      />
 
       {/* Tabela de Lançamentos */}
       <Card>
@@ -619,8 +608,8 @@ const Lancamentos = () => {
             <TableBody>
               {lancamentos.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={11} className="text-center text-muted-foreground py-8">
-                    Nenhum lançamento encontrado no período
+                  <TableCell colSpan={10}>
+                    <EmptyState icon={DollarSign} title="Nenhum lançamento encontrado" description="Ajuste o período ou cadastre um novo lançamento." size="sm" />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -667,24 +656,11 @@ const Lancamentos = () => {
                         ) : '-'}
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEdit(lanc)}
-                            title="Editar"
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDelete(lanc.id)}
-                            title="Excluir"
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
+                        <DataTableRowActions
+                          className="justify-end"
+                          onEdit={() => handleEdit(lanc)}
+                          onDelete={() => handleDelete(lanc.id)}
+                        />
                       </TableCell>
                     </TableRow>
                   );
@@ -694,6 +670,19 @@ const Lancamentos = () => {
           </Table>
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+        title="Confirmar exclusão"
+        description="Tem certeza que deseja excluir este lançamento?"
+        confirmLabel="Excluir"
+        variant="destructive"
+        onConfirm={() => {
+          if (deleteId) deleteMutation.mutate(deleteId);
+          setDeleteId(null);
+        }}
+      />
     </div>
   );
 };

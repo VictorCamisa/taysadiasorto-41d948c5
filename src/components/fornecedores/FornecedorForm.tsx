@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { z } from "zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 // Schema simplificado para a nova tabela clientes_fornecedores
 const fornecedorSchema = z.object({
@@ -13,6 +15,8 @@ const fornecedorSchema = z.object({
 
 type FornecedorFormData = z.infer<typeof fornecedorSchema>;
 
+const defaultValues: FornecedorFormData = { nome: "", cpf_cnpj: "" };
+
 interface FornecedorFormProps {
   open: boolean;
   onClose: () => void;
@@ -20,69 +24,47 @@ interface FornecedorFormProps {
   fornecedor: any | null;
 }
 
-export const FornecedorForm = ({ open, onClose, onSave, fornecedor }: FornecedorFormProps) => {
-  const [formData, setFormData] = useState<FornecedorFormData>({
-    nome: "",
-    cpf_cnpj: "",
-  });
+const formatCNPJCPF = (value: string) => {
+  const numbers = value.replace(/\D/g, "");
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  if (numbers.length <= 11) {
+    // CPF: 000.000.000-00
+    return numbers
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+  } else {
+    // CNPJ: 00.000.000/0000-00
+    return numbers
+      .replace(/(\d{2})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d)/, "$1/$2")
+      .replace(/(\d{4})(\d{1,2})$/, "$1-$2");
+  }
+};
+
+export const FornecedorForm = ({ open, onClose, onSave, fornecedor }: FornecedorFormProps) => {
+  const form = useForm<FornecedorFormData>({
+    resolver: zodResolver(fornecedorSchema),
+    defaultValues,
+  });
 
   useEffect(() => {
     if (fornecedor) {
-      setFormData({
+      form.reset({
         nome: fornecedor.nome || "",
         cpf_cnpj: fornecedor.cpf_cnpj || "",
       });
     } else {
-      setFormData({
-        nome: "",
-        cpf_cnpj: "",
-      });
+      form.reset(defaultValues);
     }
-    setErrors({});
-  }, [fornecedor, open]);
+  }, [fornecedor, open, form]);
 
-  const formatCNPJCPF = (value: string) => {
-    const numbers = value.replace(/\D/g, "");
-    
-    if (numbers.length <= 11) {
-      // CPF: 000.000.000-00
-      return numbers
-        .replace(/(\d{3})(\d)/, "$1.$2")
-        .replace(/(\d{3})(\d)/, "$1.$2")
-        .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-    } else {
-      // CNPJ: 00.000.000/0000-00
-      return numbers
-        .replace(/(\d{2})(\d)/, "$1.$2")
-        .replace(/(\d{3})(\d)/, "$1.$2")
-        .replace(/(\d{3})(\d)/, "$1/$2")
-        .replace(/(\d{4})(\d{1,2})$/, "$1-$2");
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrors({});
-
-    try {
-      const validatedData = fornecedorSchema.parse(formData);
-      onSave({
-        nome: validatedData.nome,
-        cpf_cnpj: validatedData.cpf_cnpj || null,
-      });
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const newErrors: Record<string, string> = {};
-        error.errors.forEach((err) => {
-          if (err.path[0]) {
-            newErrors[err.path[0].toString()] = err.message;
-          }
-        });
-        setErrors(newErrors);
-      }
-    }
+  const handleSubmit = (data: FornecedorFormData) => {
+    onSave({
+      nome: data.nome,
+      cpf_cnpj: data.cpf_cnpj || null,
+    });
   };
 
   return (
@@ -91,45 +73,51 @@ export const FornecedorForm = ({ open, onClose, onSave, fornecedor }: Fornecedor
         <DialogHeader>
           <DialogTitle>{fornecedor ? "Editar Fornecedor" : "Novo Fornecedor"}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="nome">Nome *</Label>
-              <Input
-                id="nome"
-                value={formData.nome}
-                onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                placeholder="Nome do fornecedor"
-                className={errors.nome ? "border-destructive" : ""}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+            <div className="space-y-4">
+              <FormField
+                control={form.control}
+                name="nome"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Nome do fornecedor" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.nome && (
-                <p className="text-sm text-destructive">{errors.nome}</p>
-              )}
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="cpf_cnpj">CPF/CNPJ</Label>
-              <Input
-                id="cpf_cnpj"
-                value={formData.cpf_cnpj}
-                onChange={(e) => setFormData({ ...formData, cpf_cnpj: formatCNPJCPF(e.target.value) })}
-                maxLength={18}
-                placeholder="000.000.000-00 ou 00.000.000/0000-00"
-                className={errors.cpf_cnpj ? "border-destructive" : ""}
-              />
-              {errors.cpf_cnpj && (
-                <p className="text-sm text-destructive">{errors.cpf_cnpj}</p>
-              )}
-            </div>
-          </div>
 
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancelar
-            </Button>
-            <Button type="submit">Salvar</Button>
-          </div>
-        </form>
+              <FormField
+                control={form.control}
+                name="cpf_cnpj"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>CPF/CNPJ</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        maxLength={18}
+                        placeholder="000.000.000-00 ou 00.000.000/0000-00"
+                        onChange={(e) => field.onChange(formatCNPJCPF(e.target.value))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={onClose}>
+                Cancelar
+              </Button>
+              <Button type="submit">Salvar</Button>
+            </div>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

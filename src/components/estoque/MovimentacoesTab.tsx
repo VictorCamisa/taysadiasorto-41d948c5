@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ArrowLeftRight } from "lucide-react";
 
 interface MovimentacoesTabProps {
   produtos: any[];
@@ -128,8 +130,8 @@ export const MovimentacoesTab = ({ produtos }: MovimentacoesTabProps) => {
             <TableBody>
               {filteredMovimentacoes.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">
-                    Nenhuma movimentação encontrada
+                  <TableCell colSpan={6}>
+                    <EmptyState icon={ArrowLeftRight} title="Nenhuma movimentação encontrada" description="Ajuste os filtros para ver outras movimentações." size="sm" />
                   </TableCell>
                 </TableRow>
               ) : (

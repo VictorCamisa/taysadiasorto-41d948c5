@@ -1,18 +1,13 @@
 import {
-  DollarSign,
-  Users,
-  Building2,
-  BarChart3,
-  ArrowRight,
-  Sparkles,
-  Settings,
   TrendingUp,
+  Users,
   Shield,
   Zap,
-  ClipboardList,
+  ArrowRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { modules as navModules, globalItems, moduleColorClass, type ModuleId } from "@/config/navigation";
 
 interface ModuleCardProps {
   title: string;
@@ -24,53 +19,26 @@ interface ModuleCardProps {
   accentColor: string;
 }
 
-const modules: ModuleCardProps[] = [
-  {
-    title: "Financeiro",
-    description: "Controle completo de fluxo de caixa, DRE e análises",
-    icon: DollarSign,
-    href: "/financeiro",
-    features: ["Dashboard", "Lançamentos", "DRE", "Relatórios"],
-    gradient: "from-emerald-500/20 via-emerald-500/5 to-transparent",
-    accentColor: "text-emerald-500 dark:text-emerald-400",
-  },
-  {
-    title: "Comercial",
-    description: "Pipeline de vendas e gestão de pacientes",
-    icon: Users,
-    href: "/crm",
-    features: ["Pipeline", "Agendamentos", "Pacientes"],
-    gradient: "from-cyan-500/20 via-cyan-500/5 to-transparent",
-    accentColor: "text-cyan-500 dark:text-cyan-400",
-  },
-  {
-    title: "Administrativo",
-    description: "Gestão de usuários, LGPD e auditoria",
-    icon: Building2,
-    href: "/admin",
-    features: ["Usuários", "LGPD", "Auditoria"],
-    gradient: "from-violet-500/20 via-violet-500/5 to-transparent",
-    accentColor: "text-violet-500 dark:text-violet-400",
-  },
-  {
-    title: "Business Intelligence",
-    description: "Análises avançadas e indicadores de performance",
-    icon: BarChart3,
-    href: "/bi",
-    features: ["LTV/CAC", "Marketing", "Projeções"],
-    gradient: "from-amber-500/20 via-amber-500/5 to-transparent",
-    accentColor: "text-amber-500 dark:text-amber-400",
-  },
-  {
-    title: "Gestão Operacional",
-    description: "Controle macro de todos os processos clínicos",
-    icon: ClipboardList,
-    href: "/gestao",
-    features: ["Contratos", "Anamneses", "Prontuários"],
-    gradient: "from-rose-500/20 via-rose-500/5 to-transparent",
-    accentColor: "text-rose-500 dark:text-rose-400",
-  },
-];
+const moduleGradient: Record<ModuleId, string> = {
+  financeiro: "from-module-financeiro/20 via-module-financeiro/5 to-transparent",
+  crm: "from-module-crm/20 via-module-crm/5 to-transparent",
+  admin: "from-module-admin/20 via-module-admin/5 to-transparent",
+  bi: "from-module-bi/20 via-module-bi/5 to-transparent",
+  gestao: "from-module-gestao/20 via-module-gestao/5 to-transparent",
+};
+
+const modules: ModuleCardProps[] = navModules.map((module) => ({
+  title: module.label,
+  description: module.description,
+  icon: module.icon,
+  href: module.basePath,
+  features: module.items.slice(0, 3).map((item) => item.label),
+  gradient: moduleGradient[module.id],
+  accentColor: moduleColorClass[module.id],
+}));
+
+const assistenteIA = globalItems.find((i) => i.to === "/assistente-ia")!;
+const configuracoes = globalItems.find((i) => i.to === "/configuracoes")!;
 
 function ModuleCard({
   title,
@@ -339,16 +307,16 @@ export default function Home() {
           </h2>
           <div className="grid sm:grid-cols-2 gap-4">
             <QuickActionCard
-              href="/assistente-ia"
-              icon={Sparkles}
-              title="Assistente IA"
+              href={assistenteIA.to}
+              icon={assistenteIA.icon}
+              title={assistenteIA.label}
               description="Tire dúvidas com inteligência artificial"
               variant="primary"
             />
             <QuickActionCard
-              href="/configuracoes"
-              icon={Settings}
-              title="Configurações"
+              href={configuracoes.to}
+              icon={configuracoes.icon}
+              title={configuracoes.label}
               description="Categorias, contas e formas de pagamento"
             />
           </div>

@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { z } from "zod";
 import type { Paciente } from "./hooks/usePacientesData";
 
@@ -64,6 +66,48 @@ const pacienteSchema = z.object({
 
 type PacienteFormData = z.infer<typeof pacienteSchema>;
 
+const defaultValues: PacienteFormData = {
+  nome: "",
+  telefone: "",
+  cpf: "",
+  rg: "",
+  rg_orgao_expedidor: "",
+  email: "",
+  data_nascimento: "",
+  sexo: "",
+  estado_civil: "",
+  nacionalidade: "",
+  naturalidade: "",
+  profissao: "",
+  instagram: "",
+  contato_emergencia_telefone: "",
+  contato_emergencia_parentesco: "",
+  endereco: "",
+  cidade: "",
+  estado: "",
+  cep: "",
+  endereco_profissional: "",
+  indicado_por: "",
+  primeiro_atendimento: "",
+  responsavel_nome: "",
+  responsavel_rg: "",
+  responsavel_rg_orgao: "",
+  responsavel_cpf: "",
+  responsavel_data_nascimento: "",
+  responsavel_sexo: "",
+  responsavel_estado_civil: "",
+  responsavel_nacionalidade: "",
+  responsavel_naturalidade: "",
+  responsavel_profissao: "",
+  responsavel_telefone: "",
+  responsavel_email: "",
+  responsavel_endereco: "",
+  responsavel_cep: "",
+  responsavel_parentesco: "",
+  observacoes: "",
+  ativo: true,
+};
+
 interface PacienteFormProps {
   open: boolean;
   onClose: () => void;
@@ -71,54 +115,40 @@ interface PacienteFormProps {
   paciente: Paciente | null;
 }
 
-export function PacienteForm({ open, onClose, onSave, paciente }: PacienteFormProps) {
-  const [formData, setFormData] = useState<PacienteFormData>({
-    nome: "",
-    telefone: "",
-    cpf: "",
-    rg: "",
-    rg_orgao_expedidor: "",
-    email: "",
-    data_nascimento: "",
-    sexo: "",
-    estado_civil: "",
-    nacionalidade: "",
-    naturalidade: "",
-    profissao: "",
-    instagram: "",
-    contato_emergencia_telefone: "",
-    contato_emergencia_parentesco: "",
-    endereco: "",
-    cidade: "",
-    estado: "",
-    cep: "",
-    endereco_profissional: "",
-    indicado_por: "",
-    primeiro_atendimento: "",
-    responsavel_nome: "",
-    responsavel_rg: "",
-    responsavel_rg_orgao: "",
-    responsavel_cpf: "",
-    responsavel_data_nascimento: "",
-    responsavel_sexo: "",
-    responsavel_estado_civil: "",
-    responsavel_nacionalidade: "",
-    responsavel_naturalidade: "",
-    responsavel_profissao: "",
-    responsavel_telefone: "",
-    responsavel_email: "",
-    responsavel_endereco: "",
-    responsavel_cep: "",
-    responsavel_parentesco: "",
-    observacoes: "",
-    ativo: true,
-  });
+const formatCPF = (value: string) => {
+  const numbers = value.replace(/\D/g, "").slice(0, 11);
+  return numbers
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+};
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
+const formatPhone = (value: string) => {
+  const numbers = value.replace(/\D/g, "").slice(0, 11);
+  if (numbers.length <= 10) {
+    return numbers
+      .replace(/(\d{2})(\d)/, "($1) $2")
+      .replace(/(\d{4})(\d)/, "$1-$2");
+  }
+  return numbers
+    .replace(/(\d{2})(\d)/, "($1) $2")
+    .replace(/(\d{5})(\d)/, "$1-$2");
+};
+
+const formatCEP = (value: string) => {
+  const numbers = value.replace(/\D/g, "").slice(0, 8);
+  return numbers.replace(/(\d{5})(\d)/, "$1-$2");
+};
+
+export function PacienteForm({ open, onClose, onSave, paciente }: PacienteFormProps) {
+  const form = useForm<PacienteFormData>({
+    resolver: zodResolver(pacienteSchema),
+    defaultValues,
+  });
 
   useEffect(() => {
     if (paciente) {
-      setFormData({
+      form.reset({
         nome: paciente.nome || "",
         telefone: paciente.telefone || "",
         cpf: paciente.cpf || "",
@@ -160,136 +190,54 @@ export function PacienteForm({ open, onClose, onSave, paciente }: PacienteFormPr
         ativo: paciente.ativo !== false,
       });
     } else {
-      setFormData({
-        nome: "",
-        telefone: "",
-        cpf: "",
-        rg: "",
-        rg_orgao_expedidor: "",
-        email: "",
-        data_nascimento: "",
-        sexo: "",
-        estado_civil: "",
-        nacionalidade: "",
-        naturalidade: "",
-        profissao: "",
-        instagram: "",
-        contato_emergencia_telefone: "",
-        contato_emergencia_parentesco: "",
-        endereco: "",
-        cidade: "",
-        estado: "",
-        cep: "",
-        endereco_profissional: "",
-        indicado_por: "",
-        primeiro_atendimento: "",
-        responsavel_nome: "",
-        responsavel_rg: "",
-        responsavel_rg_orgao: "",
-        responsavel_cpf: "",
-        responsavel_data_nascimento: "",
-        responsavel_sexo: "",
-        responsavel_estado_civil: "",
-        responsavel_nacionalidade: "",
-        responsavel_naturalidade: "",
-        responsavel_profissao: "",
-        responsavel_telefone: "",
-        responsavel_email: "",
-        responsavel_endereco: "",
-        responsavel_cep: "",
-        responsavel_parentesco: "",
-        observacoes: "",
-        ativo: true,
-      });
+      form.reset(defaultValues);
     }
-    setErrors({});
-  }, [paciente, open]);
+  }, [paciente, open, form]);
 
-  const formatCPF = (value: string) => {
-    const numbers = value.replace(/\D/g, "").slice(0, 11);
-    return numbers
-      .replace(/(\d{3})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-  };
+  const handleSubmit = (data: PacienteFormData) => {
+    const toNull = (val: string | undefined) => val?.trim() || null;
 
-  const formatPhone = (value: string) => {
-    const numbers = value.replace(/\D/g, "").slice(0, 11);
-    if (numbers.length <= 10) {
-      return numbers
-        .replace(/(\d{2})(\d)/, "($1) $2")
-        .replace(/(\d{4})(\d)/, "$1-$2");
-    }
-    return numbers
-      .replace(/(\d{2})(\d)/, "($1) $2")
-      .replace(/(\d{5})(\d)/, "$1-$2");
-  };
-
-  const formatCEP = (value: string) => {
-    const numbers = value.replace(/\D/g, "").slice(0, 8);
-    return numbers.replace(/(\d{5})(\d)/, "$1-$2");
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrors({});
-
-    try {
-      const validatedData = pacienteSchema.parse(formData);
-      const toNull = (val: string | undefined) => val?.trim() || null;
-      
-      onSave({
-        nome: validatedData.nome,
-        telefone: validatedData.telefone || null,
-        cpf: toNull(validatedData.cpf),
-        rg: toNull(validatedData.rg),
-        rg_orgao_expedidor: toNull(validatedData.rg_orgao_expedidor),
-        email: toNull(validatedData.email),
-        data_nascimento: toNull(validatedData.data_nascimento),
-        sexo: toNull(validatedData.sexo),
-        estado_civil: toNull(validatedData.estado_civil),
-        nacionalidade: toNull(validatedData.nacionalidade),
-        naturalidade: toNull(validatedData.naturalidade),
-        profissao: toNull(validatedData.profissao),
-        instagram: toNull(validatedData.instagram),
-        contato_emergencia_telefone: toNull(validatedData.contato_emergencia_telefone),
-        contato_emergencia_parentesco: toNull(validatedData.contato_emergencia_parentesco),
-        endereco: toNull(validatedData.endereco),
-        cidade: toNull(validatedData.cidade),
-        estado: toNull(validatedData.estado),
-        cep: toNull(validatedData.cep),
-        endereco_profissional: toNull(validatedData.endereco_profissional),
-        indicado_por: toNull(validatedData.indicado_por),
-        primeiro_atendimento: toNull(validatedData.primeiro_atendimento),
-        responsavel_nome: toNull(validatedData.responsavel_nome),
-        responsavel_rg: toNull(validatedData.responsavel_rg),
-        responsavel_rg_orgao: toNull(validatedData.responsavel_rg_orgao),
-        responsavel_cpf: toNull(validatedData.responsavel_cpf),
-        responsavel_data_nascimento: toNull(validatedData.responsavel_data_nascimento),
-        responsavel_sexo: toNull(validatedData.responsavel_sexo),
-        responsavel_estado_civil: toNull(validatedData.responsavel_estado_civil),
-        responsavel_nacionalidade: toNull(validatedData.responsavel_nacionalidade),
-        responsavel_naturalidade: toNull(validatedData.responsavel_naturalidade),
-        responsavel_profissao: toNull(validatedData.responsavel_profissao),
-        responsavel_telefone: toNull(validatedData.responsavel_telefone),
-        responsavel_email: toNull(validatedData.responsavel_email),
-        responsavel_endereco: toNull(validatedData.responsavel_endereco),
-        responsavel_cep: toNull(validatedData.responsavel_cep),
-        responsavel_parentesco: toNull(validatedData.responsavel_parentesco),
-        observacoes: toNull(validatedData.observacoes),
-        ativo: validatedData.ativo,
-      } as Partial<Paciente>);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const newErrors: Record<string, string> = {};
-        error.errors.forEach((err) => {
-          if (err.path[0]) {
-            newErrors[err.path[0].toString()] = err.message;
-          }
-        });
-        setErrors(newErrors);
-      }
-    }
+    onSave({
+      nome: data.nome,
+      telefone: data.telefone || null,
+      cpf: toNull(data.cpf),
+      rg: toNull(data.rg),
+      rg_orgao_expedidor: toNull(data.rg_orgao_expedidor),
+      email: toNull(data.email),
+      data_nascimento: toNull(data.data_nascimento),
+      sexo: toNull(data.sexo),
+      estado_civil: toNull(data.estado_civil),
+      nacionalidade: toNull(data.nacionalidade),
+      naturalidade: toNull(data.naturalidade),
+      profissao: toNull(data.profissao),
+      instagram: toNull(data.instagram),
+      contato_emergencia_telefone: toNull(data.contato_emergencia_telefone),
+      contato_emergencia_parentesco: toNull(data.contato_emergencia_parentesco),
+      endereco: toNull(data.endereco),
+      cidade: toNull(data.cidade),
+      estado: toNull(data.estado),
+      cep: toNull(data.cep),
+      endereco_profissional: toNull(data.endereco_profissional),
+      indicado_por: toNull(data.indicado_por),
+      primeiro_atendimento: toNull(data.primeiro_atendimento),
+      responsavel_nome: toNull(data.responsavel_nome),
+      responsavel_rg: toNull(data.responsavel_rg),
+      responsavel_rg_orgao: toNull(data.responsavel_rg_orgao),
+      responsavel_cpf: toNull(data.responsavel_cpf),
+      responsavel_data_nascimento: toNull(data.responsavel_data_nascimento),
+      responsavel_sexo: toNull(data.responsavel_sexo),
+      responsavel_estado_civil: toNull(data.responsavel_estado_civil),
+      responsavel_nacionalidade: toNull(data.responsavel_nacionalidade),
+      responsavel_naturalidade: toNull(data.responsavel_naturalidade),
+      responsavel_profissao: toNull(data.responsavel_profissao),
+      responsavel_telefone: toNull(data.responsavel_telefone),
+      responsavel_email: toNull(data.responsavel_email),
+      responsavel_endereco: toNull(data.responsavel_endereco),
+      responsavel_cep: toNull(data.responsavel_cep),
+      responsavel_parentesco: toNull(data.responsavel_parentesco),
+      observacoes: toNull(data.observacoes),
+      ativo: data.ativo,
+    } as Partial<Paciente>);
   };
 
   return (
@@ -298,509 +246,671 @@ export function PacienteForm({ open, onClose, onSave, paciente }: PacienteFormPr
         <DialogHeader>
           <DialogTitle>{paciente ? "Editar Paciente" : "Novo Paciente"}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <Tabs defaultValue="dados" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="dados">Dados Pessoais</TabsTrigger>
-              <TabsTrigger value="endereco">Endereços</TabsTrigger>
-              <TabsTrigger value="responsavel">Responsável</TabsTrigger>
-            </TabsList>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+            <Tabs defaultValue="dados" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="dados">Dados Pessoais</TabsTrigger>
+                <TabsTrigger value="endereco">Endereços</TabsTrigger>
+                <TabsTrigger value="responsavel">Responsável</TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="dados" className="space-y-4 mt-4">
-              {/* Dados Obrigatórios */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="nome">Nome *</Label>
-                  <Input
-                    id="nome"
-                    value={formData.nome}
-                    onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                    placeholder="Nome completo"
-                    className={errors.nome ? "border-destructive" : ""}
+              <TabsContent value="dados" className="space-y-4 mt-4">
+                {/* Dados Obrigatórios */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="nome"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nome *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Nome completo" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  {errors.nome && <p className="text-sm text-destructive">{errors.nome}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="telefone">Telefone Celular *</Label>
-                  <Input
-                    id="telefone"
-                    value={formData.telefone}
-                    onChange={(e) => setFormData({ ...formData, telefone: formatPhone(e.target.value) })}
-                    maxLength={15}
-                    placeholder="(00) 00000-0000"
-                    className={errors.telefone ? "border-destructive" : ""}
-                  />
-                  {errors.telefone && <p className="text-sm text-destructive">{errors.telefone}</p>}
-                </div>
-              </div>
-
-              {/* Documentos */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="rg">RG</Label>
-                  <Input
-                    id="rg"
-                    value={formData.rg}
-                    onChange={(e) => setFormData({ ...formData, rg: e.target.value })}
-                    maxLength={20}
-                    placeholder="00.000.000-0"
+                  <FormField
+                    control={form.control}
+                    name="telefone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Telefone Celular *</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            maxLength={15}
+                            placeholder="(00) 00000-0000"
+                            onChange={(e) => field.onChange(formatPhone(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="rg_orgao_expedidor">Órgão Expedidor</Label>
-                  <Input
-                    id="rg_orgao_expedidor"
-                    value={formData.rg_orgao_expedidor}
-                    onChange={(e) => setFormData({ ...formData, rg_orgao_expedidor: e.target.value })}
-                    placeholder="SSP/SP"
+                {/* Documentos */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="rg"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>RG</FormLabel>
+                        <FormControl>
+                          <Input {...field} maxLength={20} placeholder="00.000.000-0" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="rg_orgao_expedidor"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Órgão Expedidor</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="SSP/SP" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="cpf"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>CPF</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            maxLength={14}
+                            placeholder="000.000.000-00"
+                            onChange={(e) => field.onChange(formatCPF(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="data_nascimento"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Data de Nascimento</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="cpf">CPF</Label>
-                  <Input
-                    id="cpf"
-                    value={formData.cpf}
-                    onChange={(e) => setFormData({ ...formData, cpf: formatCPF(e.target.value) })}
-                    maxLength={14}
-                    placeholder="000.000.000-00"
+                {/* Dados Pessoais */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="sexo"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Sexo</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {SEXO_OPTIONS.map((opt) => (
+                              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="estado_civil"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Estado Civil</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {ESTADO_CIVIL_OPTIONS.map((opt) => (
+                              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="nacionalidade"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nacionalidade</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Brasileira" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="naturalidade"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Naturalidade</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="São Paulo" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="data_nascimento">Data de Nascimento</Label>
-                  <Input
-                    id="data_nascimento"
-                    type="date"
-                    value={formData.data_nascimento}
-                    onChange={(e) => setFormData({ ...formData, data_nascimento: e.target.value })}
+                {/* Contato e Profissão */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="profissao"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Profissão</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Profissão" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
-              </div>
-
-              {/* Dados Pessoais */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="sexo">Sexo</Label>
-                  <Select
-                    value={formData.sexo}
-                    onValueChange={(value) => setFormData({ ...formData, sexo: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SEXO_OPTIONS.map((opt) => (
-                        <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="estado_civil">Estado Civil</Label>
-                  <Select
-                    value={formData.estado_civil}
-                    onValueChange={(value) => setFormData({ ...formData, estado_civil: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ESTADO_CIVIL_OPTIONS.map((opt) => (
-                        <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="nacionalidade">Nacionalidade</Label>
-                  <Input
-                    id="nacionalidade"
-                    value={formData.nacionalidade}
-                    onChange={(e) => setFormData({ ...formData, nacionalidade: e.target.value })}
-                    placeholder="Brasileira"
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>E-mail</FormLabel>
+                        <FormControl>
+                          <Input type="email" placeholder="email@exemplo.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="instagram"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Instagram</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="@usuario" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="naturalidade">Naturalidade</Label>
-                  <Input
-                    id="naturalidade"
-                    value={formData.naturalidade}
-                    onChange={(e) => setFormData({ ...formData, naturalidade: e.target.value })}
-                    placeholder="São Paulo"
+                {/* Contato de Emergência */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="contato_emergencia_telefone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Contato de Emergência</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            maxLength={15}
+                            placeholder="(00) 00000-0000"
+                            onChange={(e) => field.onChange(formatPhone(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
-              </div>
-
-              {/* Contato e Profissão */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="profissao">Profissão</Label>
-                  <Input
-                    id="profissao"
-                    value={formData.profissao}
-                    onChange={(e) => setFormData({ ...formData, profissao: e.target.value })}
-                    placeholder="Profissão"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="email">E-mail</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="email@exemplo.com"
-                    className={errors.email ? "border-destructive" : ""}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="instagram">Instagram</Label>
-                  <Input
-                    id="instagram"
-                    value={formData.instagram}
-                    onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
-                    placeholder="@usuario"
-                  />
-                </div>
-              </div>
-
-              {/* Contato de Emergência */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="contato_emergencia_telefone">Contato de Emergência</Label>
-                  <Input
-                    id="contato_emergencia_telefone"
-                    value={formData.contato_emergencia_telefone}
-                    onChange={(e) => setFormData({ ...formData, contato_emergencia_telefone: formatPhone(e.target.value) })}
-                    maxLength={15}
-                    placeholder="(00) 00000-0000"
+                  <FormField
+                    control={form.control}
+                    name="contato_emergencia_parentesco"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Parentesco</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Mãe, Pai, Cônjuge..." />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="contato_emergencia_parentesco">Parentesco</Label>
-                  <Input
-                    id="contato_emergencia_parentesco"
-                    value={formData.contato_emergencia_parentesco}
-                    onChange={(e) => setFormData({ ...formData, contato_emergencia_parentesco: e.target.value })}
-                    placeholder="Mãe, Pai, Cônjuge..."
+                {/* Indicação e Primeiro Atendimento */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="indicado_por"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Indicado por</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Nome de quem indicou" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="primeiro_atendimento"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Primeiro Atendimento em</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
-              </div>
 
-              {/* Indicação e Primeiro Atendimento */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="indicado_por">Indicado por</Label>
-                  <Input
-                    id="indicado_por"
-                    value={formData.indicado_por}
-                    onChange={(e) => setFormData({ ...formData, indicado_por: e.target.value })}
-                    placeholder="Nome de quem indicou"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="primeiro_atendimento">Primeiro Atendimento em</Label>
-                  <Input
-                    id="primeiro_atendimento"
-                    type="date"
-                    value={formData.primeiro_atendimento}
-                    onChange={(e) => setFormData({ ...formData, primeiro_atendimento: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Switch
-                  id="ativo"
-                  checked={formData.ativo}
-                  onCheckedChange={(checked) => setFormData({ ...formData, ativo: checked })}
+                <FormField
+                  control={form.control}
+                  name="ativo"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center gap-3 space-y-0">
+                      <FormControl>
+                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <FormLabel className="!mt-0">Paciente ativo</FormLabel>
+                    </FormItem>
+                  )}
                 />
-                <Label htmlFor="ativo">Paciente ativo</Label>
-              </div>
-            </TabsContent>
+              </TabsContent>
 
-            <TabsContent value="endereco" className="space-y-4 mt-4">
-              {/* Endereço Residencial */}
-              <h3 className="text-sm font-medium text-muted-foreground">Endereço Residencial</h3>
-              <div className="grid grid-cols-1 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="endereco">Endereço Completo</Label>
-                  <Input
-                    id="endereco"
-                    value={formData.endereco}
-                    onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
-                    placeholder="Rua, número, complemento, bairro"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="cidade">Cidade</Label>
-                  <Input
-                    id="cidade"
-                    value={formData.cidade}
-                    onChange={(e) => setFormData({ ...formData, cidade: e.target.value })}
-                    placeholder="Cidade"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="estado">Estado</Label>
-                  <Select
-                    value={formData.estado}
-                    onValueChange={(value) => setFormData({ ...formData, estado: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="UF" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ESTADOS_BR.map((uf) => (
-                        <SelectItem key={uf} value={uf}>{uf}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="cep">CEP</Label>
-                  <Input
-                    id="cep"
-                    value={formData.cep}
-                    onChange={(e) => setFormData({ ...formData, cep: formatCEP(e.target.value) })}
-                    maxLength={9}
-                    placeholder="00000-000"
-                  />
-                </div>
-              </div>
-
-              {/* Endereço Profissional */}
-              <h3 className="text-sm font-medium text-muted-foreground mt-6">Endereço Profissional</h3>
-              <div className="space-y-2">
-                <Label htmlFor="endereco_profissional">Endereço Profissional</Label>
-                <Input
-                  id="endereco_profissional"
-                  value={formData.endereco_profissional}
-                  onChange={(e) => setFormData({ ...formData, endereco_profissional: e.target.value })}
-                  placeholder="Rua, número, complemento, bairro, cidade/UF"
+              <TabsContent value="endereco" className="space-y-4 mt-4">
+                {/* Endereço Residencial */}
+                <h3 className="text-sm font-medium text-muted-foreground">Endereço Residencial</h3>
+                <FormField
+                  control={form.control}
+                  name="endereco"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Endereço Completo</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Rua, número, complemento, bairro" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              {/* Observações */}
-              <div className="space-y-2 mt-6">
-                <Label htmlFor="observacoes">Observações</Label>
-                <Textarea
-                  id="observacoes"
-                  value={formData.observacoes}
-                  onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
-                  placeholder="Observações gerais sobre o paciente"
-                  rows={3}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="cidade"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Cidade</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Cidade" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="estado"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Estado</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="UF" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {ESTADOS_BR.map((uf) => (
+                              <SelectItem key={uf} value={uf}>{uf}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="cep"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>CEP</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            maxLength={9}
+                            placeholder="00000-000"
+                            onChange={(e) => field.onChange(formatCEP(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Endereço Profissional */}
+                <h3 className="text-sm font-medium text-muted-foreground mt-6">Endereço Profissional</h3>
+                <FormField
+                  control={form.control}
+                  name="endereco_profissional"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Endereço Profissional</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Rua, número, complemento, bairro, cidade/UF" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-            </TabsContent>
 
-            <TabsContent value="responsavel" className="space-y-4 mt-4">
-              <p className="text-sm text-muted-foreground">
-                Preencha os dados do responsável pelo tratamento (para menores de idade ou quando necessário).
-              </p>
+                {/* Observações */}
+                <FormField
+                  control={form.control}
+                  name="observacoes"
+                  render={({ field }) => (
+                    <FormItem className="mt-6">
+                      <FormLabel>Observações</FormLabel>
+                      <FormControl>
+                        <Textarea {...field} placeholder="Observações gerais sobre o paciente" rows={3} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </TabsContent>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="responsavel_nome">Nome do Responsável</Label>
-                  <Input
-                    id="responsavel_nome"
-                    value={formData.responsavel_nome}
-                    onChange={(e) => setFormData({ ...formData, responsavel_nome: e.target.value })}
-                    placeholder="Nome completo"
+              <TabsContent value="responsavel" className="space-y-4 mt-4">
+                <p className="text-sm text-muted-foreground">
+                  Preencha os dados do responsável pelo tratamento (para menores de idade ou quando necessário).
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="responsavel_nome"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nome do Responsável</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Nome completo" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="responsavel_parentesco"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Parentesco/Relação</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Pai, Mãe, Tutor..." />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="responsavel_parentesco">Parentesco/Relação</Label>
-                  <Input
-                    id="responsavel_parentesco"
-                    value={formData.responsavel_parentesco}
-                    onChange={(e) => setFormData({ ...formData, responsavel_parentesco: e.target.value })}
-                    placeholder="Pai, Mãe, Tutor..."
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="responsavel_rg"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>RG</FormLabel>
+                        <FormControl>
+                          <Input {...field} maxLength={20} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="responsavel_rg">RG</Label>
-                  <Input
-                    id="responsavel_rg"
-                    value={formData.responsavel_rg}
-                    onChange={(e) => setFormData({ ...formData, responsavel_rg: e.target.value })}
-                    maxLength={20}
+                  <FormField
+                    control={form.control}
+                    name="responsavel_rg_orgao"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Órgão Expedidor</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="SSP/SP" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="responsavel_rg_orgao">Órgão Expedidor</Label>
-                  <Input
-                    id="responsavel_rg_orgao"
-                    value={formData.responsavel_rg_orgao}
-                    onChange={(e) => setFormData({ ...formData, responsavel_rg_orgao: e.target.value })}
-                    placeholder="SSP/SP"
+                  <FormField
+                    control={form.control}
+                    name="responsavel_cpf"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>CPF</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            maxLength={14}
+                            placeholder="000.000.000-00"
+                            onChange={(e) => field.onChange(formatCPF(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="responsavel_cpf">CPF</Label>
-                  <Input
-                    id="responsavel_cpf"
-                    value={formData.responsavel_cpf}
-                    onChange={(e) => setFormData({ ...formData, responsavel_cpf: formatCPF(e.target.value) })}
-                    maxLength={14}
-                    placeholder="000.000.000-00"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="responsavel_data_nascimento">Data Nascimento</Label>
-                  <Input
-                    id="responsavel_data_nascimento"
-                    type="date"
-                    value={formData.responsavel_data_nascimento}
-                    onChange={(e) => setFormData({ ...formData, responsavel_data_nascimento: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="responsavel_sexo">Sexo</Label>
-                  <Select
-                    value={formData.responsavel_sexo}
-                    onValueChange={(value) => setFormData({ ...formData, responsavel_sexo: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SEXO_OPTIONS.map((opt) => (
-                        <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="responsavel_estado_civil">Estado Civil</Label>
-                  <Select
-                    value={formData.responsavel_estado_civil}
-                    onValueChange={(value) => setFormData({ ...formData, responsavel_estado_civil: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ESTADO_CIVIL_OPTIONS.map((opt) => (
-                        <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="responsavel_nacionalidade">Nacionalidade</Label>
-                  <Input
-                    id="responsavel_nacionalidade"
-                    value={formData.responsavel_nacionalidade}
-                    onChange={(e) => setFormData({ ...formData, responsavel_nacionalidade: e.target.value })}
-                    placeholder="Brasileira"
+                  <FormField
+                    control={form.control}
+                    name="responsavel_data_nascimento"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Data Nascimento</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="responsavel_naturalidade">Naturalidade</Label>
-                  <Input
-                    id="responsavel_naturalidade"
-                    value={formData.responsavel_naturalidade}
-                    onChange={(e) => setFormData({ ...formData, responsavel_naturalidade: e.target.value })}
-                    placeholder="São Paulo"
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="responsavel_sexo"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Sexo</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {SEXO_OPTIONS.map((opt) => (
+                              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="responsavel_estado_civil"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Estado Civil</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {ESTADO_CIVIL_OPTIONS.map((opt) => (
+                              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="responsavel_nacionalidade"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nacionalidade</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Brasileira" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="responsavel_naturalidade"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Naturalidade</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="São Paulo" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="responsavel_profissao">Profissão</Label>
-                  <Input
-                    id="responsavel_profissao"
-                    value={formData.responsavel_profissao}
-                    onChange={(e) => setFormData({ ...formData, responsavel_profissao: e.target.value })}
-                    placeholder="Profissão"
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="responsavel_profissao"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Profissão</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Profissão" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="responsavel_telefone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Telefone</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            maxLength={15}
+                            placeholder="(00) 00000-0000"
+                            onChange={(e) => field.onChange(formatPhone(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="responsavel_email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>E-mail</FormLabel>
+                        <FormControl>
+                          <Input type="email" placeholder="email@exemplo.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="responsavel_telefone">Telefone</Label>
-                  <Input
-                    id="responsavel_telefone"
-                    value={formData.responsavel_telefone}
-                    onChange={(e) => setFormData({ ...formData, responsavel_telefone: formatPhone(e.target.value) })}
-                    maxLength={15}
-                    placeholder="(00) 00000-0000"
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="responsavel_endereco"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Endereço</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Rua, número, complemento, bairro, cidade/UF" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="responsavel_cep"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>CEP</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            maxLength={9}
+                            placeholder="00000-000"
+                            onChange={(e) => field.onChange(formatCEP(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
+              </TabsContent>
+            </Tabs>
 
-                <div className="space-y-2">
-                  <Label htmlFor="responsavel_email">E-mail</Label>
-                  <Input
-                    id="responsavel_email"
-                    type="email"
-                    value={formData.responsavel_email}
-                    onChange={(e) => setFormData({ ...formData, responsavel_email: e.target.value })}
-                    placeholder="email@exemplo.com"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="responsavel_endereco">Endereço</Label>
-                  <Input
-                    id="responsavel_endereco"
-                    value={formData.responsavel_endereco}
-                    onChange={(e) => setFormData({ ...formData, responsavel_endereco: e.target.value })}
-                    placeholder="Rua, número, complemento, bairro, cidade/UF"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="responsavel_cep">CEP</Label>
-                  <Input
-                    id="responsavel_cep"
-                    value={formData.responsavel_cep}
-                    onChange={(e) => setFormData({ ...formData, responsavel_cep: formatCEP(e.target.value) })}
-                    maxLength={9}
-                    placeholder="00000-000"
-                  />
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
-
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancelar
-            </Button>
-            <Button type="submit">Salvar</Button>
-          </div>
-        </form>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button type="button" variant="outline" onClick={onClose}>
+                Cancelar
+              </Button>
+              <Button type="submit">Salvar</Button>
+            </div>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

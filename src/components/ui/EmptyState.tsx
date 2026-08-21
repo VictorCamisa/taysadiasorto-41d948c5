@@ -9,6 +9,7 @@ interface EmptyStateProps {
   description: string;
   actionLabel?: string;
   onAction?: () => void;
+  size?: "sm" | "md";
   className?: string;
   children?: ReactNode;
 }
@@ -19,13 +20,15 @@ export function EmptyState({
   description,
   actionLabel,
   onAction,
+  size = "md",
   className,
   children,
 }: EmptyStateProps) {
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center py-12 px-4 text-center",
+        "flex flex-col items-center justify-center text-center",
+        size === "sm" ? "py-8 px-4" : "py-12 px-4",
         className
       )}
     >
@@ -34,9 +37,7 @@ export function EmptyState({
       </div>
       <h3 className="text-lg font-semibold mb-1">{title}</h3>
       <p className="text-muted-foreground text-sm max-w-sm mb-4">{description}</p>
-      {actionLabel && onAction && (
-        <Button onClick={onAction}>{actionLabel}</Button>
-      )}
+      {actionLabel && onAction && <Button onClick={onAction}>{actionLabel}</Button>}
       {children}
     </div>
   );

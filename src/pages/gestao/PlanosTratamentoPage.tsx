@@ -1,12 +1,11 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Table,
@@ -16,20 +15,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { 
-  Search, 
-  FileText, 
-  ExternalLink, 
-  Eye, 
-  Download,
-  Filter,
-  ChevronLeft
-} from "lucide-react";
+import { FilterBar } from "@/components/ui/FilterBar";
+import { LoadingState } from "@/components/ui/LoadingState";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { DataTableRowActions } from "@/components/ui/DataTableRowActions";
+import { FileText, ExternalLink, Download, ChevronLeft } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { cn } from "@/lib/utils";
 
 export default function PlanosTratamentoPage() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
@@ -43,14 +38,14 @@ export default function PlanosTratamentoPage() {
           pacientes:paciente_id (id, nome, telefone)
         `)
         .order("created_at", { ascending: false });
-      
+
       if (error) throw error;
       return data as any[];
     },
   });
 
   const filteredPlanos = planos?.filter((plano) => {
-    const matchesSearch = 
+    const matchesSearch =
       plano.pacientes?.nome?.toLowerCase().includes(search.toLowerCase()) ||
       plano.titulo?.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === "all" || plano.status === statusFilter;
@@ -77,34 +72,22 @@ export default function PlanosTratamentoPage() {
         />
       </div>
 
-      {/* Filters */}
-      <Card className="bg-card/60 border-border/40">
-        <CardContent className="p-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por paciente ou título..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-48">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os status</SelectItem>
-                <SelectItem value="pendente">Pendente</SelectItem>
-                <SelectItem value="aprovado">Aprovado</SelectItem>
-                <SelectItem value="recusado">Recusado</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+      <FilterBar
+        search={{ value: search, onChange: setSearch, placeholder: "Buscar por paciente ou título..." }}
+        filters={
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-full md:w-48">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os status</SelectItem>
+              <SelectItem value="pendente">Pendente</SelectItem>
+              <SelectItem value="aprovado">Aprovado</SelectItem>
+              <SelectItem value="recusado">Recusado</SelectItem>
+            </SelectContent>
+          </Select>
+        }
+      />
 
       {/* Table */}
       <Card className="bg-card/60 border-border/40">
@@ -122,22 +105,14 @@ export default function PlanosTratamentoPage() {
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    Carregando...
-                  </TableCell>
-                </TableRow>
+                <TableRow><TableCell colSpan={6}><LoadingState /></TableCell></TableRow>
               ) : filteredPlanos?.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    Nenhum plano encontrado
-                  </TableCell>
-                </TableRow>
+                <TableRow><TableCell colSpan={6}><EmptyState icon={FileText} title="Nenhum plano encontrado" description="Ajuste os filtros ou aguarde novos registros." size="sm" /></TableCell></TableRow>
               ) : (
                 filteredPlanos?.map((plano) => (
                   <TableRow key={plano.id}>
                     <TableCell>
-                      <Link 
+                      <Link
                         to={`/crm/pacientes/${plano.paciente_id}`}
                         className="font-medium text-foreground hover:text-primary transition-colors"
                       >
@@ -164,20 +139,15 @@ export default function PlanosTratamentoPage() {
                         : "—"}
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button variant="ghost" size="icon" asChild>
-                          <Link to={`/crm/pacientes/${plano.paciente_id}`}>
-                            <ExternalLink className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                        {plano.pdf_url && (
-                          <Button variant="ghost" size="icon" asChild>
-                            <a href={plano.pdf_url} target="_blank" rel="noopener noreferrer">
-                              <Download className="h-4 w-4" />
-                            </a>
-                          </Button>
-                        )}
-                      </div>
+                      <DataTableRowActions
+                        className="justify-end"
+                        statusActions={[
+                          { icon: ExternalLink, label: "Ver paciente", onClick: () => navigate(`/crm/pacientes/${plano.paciente_id}`) },
+                          ...(plano.pdf_url
+                            ? [{ icon: Download, label: "Baixar", onClick: () => window.open(plano.pdf_url, "_blank", "noopener,noreferrer") }]
+                            : []),
+                        ]}
+                      />
                     </TableCell>
                   </TableRow>
                 ))

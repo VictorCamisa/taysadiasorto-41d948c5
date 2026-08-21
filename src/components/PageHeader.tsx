@@ -5,6 +5,7 @@ interface PageHeaderProps {
   title: string;
   description?: string;
   icon?: React.ReactNode;
+  /** The page's primary CTA (e.g. "Novo Paciente") always goes here, never elsewhere on the page. */
   actions?: React.ReactNode;
   className?: string;
   children?: React.ReactNode;

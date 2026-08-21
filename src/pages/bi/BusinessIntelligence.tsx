@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { useBIData } from "@/hooks/useBIData";
 import { formatCurrency, formatNumber } from "@/lib/utils";
-import { BIKPICard } from "@/components/bi/BIKPICard";
+import { KPICard } from "@/components/ui/KPICard";
 import { LTVCACChart } from "@/components/bi/LTVCACChart";
 import { FunnelChart } from "@/components/bi/FunnelChart";
 import { MarketingROASChart } from "@/components/bi/MarketingROASChart";
@@ -65,35 +65,32 @@ export default function BusinessIntelligence() {
 
       {/* Main KPIs */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <BIKPICard
-          title="Receita Total"
+        <KPICard
+          label="Receita Total"
           value={formatCurrency(kpis.receitaTotal)}
           icon={DollarSign}
-          trend={kpis.crescimentoReceita}
-          trendLabel="vs período anterior"
-          variant="success"
+          trend={{ value: kpis.crescimentoReceita, label: "vs período anterior" }}
+          tone="success"
         />
-        <BIKPICard
-          title="Lucro Líquido"
+        <KPICard
+          label="Lucro Líquido"
           value={formatCurrency(kpis.lucroLiquido)}
           icon={Wallet}
-          trend={kpis.crescimentoLucro}
-          trendLabel="vs período anterior"
-          variant={kpis.lucroLiquido >= 0 ? "success" : "danger"}
+          trend={{ value: kpis.crescimentoLucro, label: "vs período anterior" }}
+          tone={kpis.lucroLiquido >= 0 ? "success" : "danger"}
         />
-        <BIKPICard
-          title="Margem Bruta"
+        <KPICard
+          label="Margem Bruta"
           value={`${formatNumber(kpis.margemBrutaPercent, 1)}%`}
           subtitle={formatCurrency(kpis.margemBruta)}
           icon={Percent}
-          variant={kpis.margemBrutaPercent >= 50 ? "success" : kpis.margemBrutaPercent >= 30 ? "warning" : "danger"}
+          tone={kpis.margemBrutaPercent >= 50 ? "success" : kpis.margemBrutaPercent >= 30 ? "warning" : "danger"}
         />
-        <BIKPICard
-          title="Ticket Médio"
+        <KPICard
+          label="Ticket Médio"
           value={formatCurrency(kpis.ticketMedio)}
           subtitle={`${kpis.totalTransacoes} transações`}
           icon={TrendingUp}
-          variant="bi"
         />
       </div>
 

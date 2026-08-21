@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from "recharts";
 import { formatCurrency } from "@/lib/utils";
-import { BIKPICard } from "./BIKPICard";
+import { KPICard } from "@/components/ui/KPICard";
 import { TrendingUp, Users, DollarSign, Target } from "lucide-react";
 
 interface LTVCACChartProps {
@@ -45,33 +45,32 @@ export function LTVCACChart({
     <div className="space-y-4">
       {/* KPI Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <BIKPICard
-          title="LTV (Lifetime Value)"
+        <KPICard
+          label="LTV (Lifetime Value)"
           value={formatCurrency(ltv)}
           subtitle="Valor médio por cliente"
           icon={DollarSign}
-          variant="success"
+          tone="success"
         />
-        <BIKPICard
-          title="CAC (Custo Aquisição)"
+        <KPICard
+          label="CAC (Custo Aquisição)"
           value={formatCurrency(cac)}
           subtitle="Custo por cliente"
           icon={Target}
-          variant="warning"
+          tone="warning"
         />
-        <BIKPICard
-          title="Ratio LTV:CAC"
+        <KPICard
+          label="Ratio LTV:CAC"
           value={`${ltvCacRatio.toFixed(1)}x`}
           subtitle={getRatioLabel()}
           icon={TrendingUp}
-          variant={ltvCacRatio >= 3 ? 'success' : ltvCacRatio >= 2 ? 'warning' : 'danger'}
+          tone={ltvCacRatio >= 3 ? 'success' : ltvCacRatio >= 2 ? 'warning' : 'danger'}
         />
-        <BIKPICard
-          title="Base de Clientes"
+        <KPICard
+          label="Base de Clientes"
           value={numClientes.toLocaleString()}
           subtitle={`+${novosClientes} novos no período`}
           icon={Users}
-          variant="bi"
         />
       </div>
 

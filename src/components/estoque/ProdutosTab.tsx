@@ -3,10 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, XCircle } from "lucide-react";
+import { Plus, Package } from "lucide-react";
 import { ProdutosFilters } from "./ProdutosFilters";
 import { ProdutoForm } from "./ProdutoForm";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { DataTableRowActions } from "@/components/ui/DataTableRowActions";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 interface ProdutosTabProps {
   produtos: any[];
@@ -67,26 +69,25 @@ export const ProdutosTab = ({ produtos, fornecedores, onSaveProduto, onDeletePro
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <ProdutosFilters
-          search={search}
-          setSearch={setSearch}
-          categoria={categoria}
-          setCategoria={setCategoria}
-          fornecedorId={fornecedorId}
-          setFornecedorId={setFornecedorId}
-          status={status}
-          setStatus={setStatus}
-          somenteEstoqueCritico={somenteEstoqueCritico}
-          setSomenteEstoqueCritico={setSomenteEstoqueCritico}
-          categorias={categorias}
-          fornecedores={fornecedores}
-        />
-      </div>
-
-      <div className="flex justify-end">
+      <div className="flex flex-col lg:flex-row lg:items-start gap-3">
+        <div className="flex-1">
+          <ProdutosFilters
+            search={search}
+            setSearch={setSearch}
+            categoria={categoria}
+            setCategoria={setCategoria}
+            fornecedorId={fornecedorId}
+            setFornecedorId={setFornecedorId}
+            status={status}
+            setStatus={setStatus}
+            somenteEstoqueCritico={somenteEstoqueCritico}
+            setSomenteEstoqueCritico={setSomenteEstoqueCritico}
+            categorias={categorias}
+            fornecedores={fornecedores}
+          />
+        </div>
         <Button onClick={handleNew}>
-          <Plus className="h-4 w-4" />
+          <Plus className="h-4 w-4 mr-2" />
           Novo Produto
         </Button>
       </div>
@@ -115,8 +116,13 @@ export const ProdutosTab = ({ produtos, fornecedores, onSaveProduto, onDeletePro
             <TableBody>
               {filteredProdutos.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={11} className="text-center text-muted-foreground">
-                    Nenhum produto encontrado
+                  <TableCell colSpan={11}>
+                    <EmptyState
+                      icon={Package}
+                      title="Nenhum produto encontrado"
+                      description="Ajuste os filtros ou cadastre um novo produto."
+                      size="sm"
+                    />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -157,22 +163,10 @@ export const ProdutosTab = ({ produtos, fornecedores, onSaveProduto, onDeletePro
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEdit(produto)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleConfirmDelete(produto.id)}
-                          >
-                            <XCircle className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        <DataTableRowActions
+                          onEdit={() => handleEdit(produto)}
+                          onDelete={() => handleConfirmDelete(produto.id)}
+                        />
                       </TableCell>
                     </TableRow>
                   );
@@ -191,20 +185,15 @@ export const ProdutosTab = ({ produtos, fornecedores, onSaveProduto, onDeletePro
         fornecedores={fornecedores}
       />
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Excluir</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Confirmar exclusão"
+        description="Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita."
+        confirmLabel="Excluir"
+        variant="destructive"
+        onConfirm={handleDelete}
+      />
     </div>
   );
 };

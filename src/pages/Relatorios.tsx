@@ -14,6 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { CashFlowProjection } from "@/components/relatorios/CashFlowProjection";
+import { PageHeader } from "@/components/PageHeader";
 
 const COLORS = ['#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#ec4899', '#14b8a6', '#f97316'];
 
@@ -391,12 +392,11 @@ const Relatorios = () => {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-4xl font-bold">Relatórios</h1>
-          <p className="text-muted-foreground mt-1">Análises e relatórios detalhados com comparação de períodos</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Relatórios"
+        description="Análises e relatórios detalhados com comparação de períodos"
+        icon={<FileText className="h-6 w-6 text-primary" />}
+      />
 
       <Tabs defaultValue="receitas" className="space-y-6">
         <TabsList className="grid w-full grid-cols-5">

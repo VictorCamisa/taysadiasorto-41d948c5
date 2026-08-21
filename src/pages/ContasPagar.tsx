@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, CheckCircle, Filter } from "lucide-react";
+import { Plus, CheckCircle, CreditCard } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import {
@@ -28,6 +28,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
+import { PageHeader } from "@/components/PageHeader";
+import { FilterBar } from "@/components/ui/FilterBar";
+import { DataTableRowActions } from "@/components/ui/DataTableRowActions";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 const ContasPagar = () => {
   const [statusFiltro, setStatusFiltro] = useState<string | "todos">("todos");
@@ -44,6 +49,8 @@ const ContasPagar = () => {
     observacoes: "",
     status: "pendente" as "pendente" | "pago" | "atrasado" | "cancelado",
   });
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [marcarPagoId, setMarcarPagoId] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
 
@@ -251,15 +258,11 @@ const ContasPagar = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Tem certeza que deseja excluir esta conta a pagar?")) {
-      deleteMutation.mutate(id);
-    }
+    setDeleteId(id);
   };
 
   const handleMarcarPago = (id: string) => {
-    if (confirm("Deseja marcar esta conta como paga?")) {
-      marcarPagoMutation.mutate(id);
-    }
+    setMarcarPagoId(id);
   };
 
   const getStatusColor = (status: string, vencimento: string) => {
@@ -280,22 +283,24 @@ const ContasPagar = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Contas a Pagar</h1>
-          <p className="text-muted-foreground">Gerencie suas despesas e pagamentos</p>
-        </div>
-        <Dialog open={dialogOpen} onOpenChange={(open) => {
-          setDialogOpen(open);
-          if (!open) resetForm();
-        }}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Nova Conta
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={dialogOpen} onOpenChange={(open) => {
+        setDialogOpen(open);
+        if (!open) resetForm();
+      }}>
+        <PageHeader
+          title="Contas a Pagar"
+          description="Gerencie suas despesas e pagamentos"
+          icon={<CreditCard className="h-6 w-6 text-primary" />}
+          actions={
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Nova Conta
+              </Button>
+            </DialogTrigger>
+          }
+        />
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingId ? "Editar" : "Nova"} Conta a Pagar</DialogTitle>
             </DialogHeader>
@@ -434,21 +439,13 @@ const ContasPagar = () => {
               </div>
             </form>
           </DialogContent>
-        </Dialog>
-      </div>
+      </Dialog>
 
-      {/* Filtro de Status */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Filtro por Status
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <FilterBar
+        filters={
           <Select value={statusFiltro} onValueChange={setStatusFiltro}>
             <SelectTrigger className="w-64">
-              <SelectValue />
+              <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="todos">Todos</SelectItem>
@@ -458,8 +455,8 @@ const ContasPagar = () => {
               <SelectItem value="cancelado">Cancelado</SelectItem>
             </SelectContent>
           </Select>
-        </CardContent>
-      </Card>
+        }
+      />
 
       {/* Tabela */}
       <Card>
@@ -482,8 +479,8 @@ const ContasPagar = () => {
             <TableBody>
               {contasPagar.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                    Nenhuma conta encontrada
+                  <TableCell colSpan={7}>
+                    <EmptyState icon={CreditCard} title="Nenhuma conta encontrada" description="Ajuste o filtro ou cadastre uma nova conta a pagar." size="sm" />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -508,32 +505,16 @@ const ContasPagar = () => {
                       {formatCurrency(Number(conta.valor || 0))}
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        {conta.status !== "pago" && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleMarcarPago(conta.id)}
-                            title="Marcar como pago"
-                          >
-                            <CheckCircle className="h-4 w-4 text-green-600" />
-                          </Button>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEdit(conta)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(conta.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
+                      <DataTableRowActions
+                        className="justify-end"
+                        onEdit={() => handleEdit(conta)}
+                        statusActions={
+                          conta.status !== "pago"
+                            ? [{ icon: CheckCircle, label: "Marcar como pago", tone: "success", onClick: () => handleMarcarPago(conta.id) }]
+                            : undefined
+                        }
+                        onDelete={() => handleDelete(conta.id)}
+                      />
                     </TableCell>
                   </TableRow>
                 ))
@@ -542,6 +523,31 @@ const ContasPagar = () => {
           </Table>
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+        title="Confirmar exclusão"
+        description="Tem certeza que deseja excluir esta conta a pagar?"
+        confirmLabel="Excluir"
+        variant="destructive"
+        onConfirm={() => {
+          if (deleteId) deleteMutation.mutate(deleteId);
+          setDeleteId(null);
+        }}
+      />
+
+      <ConfirmDialog
+        open={!!marcarPagoId}
+        onOpenChange={(open) => !open && setMarcarPagoId(null)}
+        title="Marcar como pago"
+        description="Deseja marcar esta conta como paga?"
+        confirmLabel="Confirmar"
+        onConfirm={() => {
+          if (marcarPagoId) marcarPagoMutation.mutate(marcarPagoId);
+          setMarcarPagoId(null);
+        }}
+      />
     </div>
   );
 };

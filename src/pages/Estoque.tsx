@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { Package } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PageHeader } from "@/components/PageHeader";
 import { useEstoqueData } from "@/components/estoque/hooks/useEstoqueData";
 import { EstoqueKPIs } from "@/components/estoque/EstoqueKPIs";
 import { ProdutosTab } from "@/components/estoque/ProdutosTab";
@@ -185,10 +187,11 @@ const Estoque = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Gestão de Estoque</h1>
-        <p className="text-muted-foreground">Controle produtos e compras</p>
-      </div>
+      <PageHeader
+        title="Gestão de Estoque"
+        description="Controle produtos e compras"
+        icon={<Package className="h-6 w-6 text-primary" />}
+      />
 
       <EstoqueKPIs
         valorTotalEstoque={valorTotalEstoque}

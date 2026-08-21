@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { formatCurrency } from "@/lib/utils";
-import { BIKPICard } from "./BIKPICard";
+import { KPICard } from "@/components/ui/KPICard";
 import { TrendingUp, Calendar, Target } from "lucide-react";
 
 interface ProjectionData {
@@ -29,26 +29,25 @@ export function ProjectionsChart({ data, receitaAtual, crescimentoAtual }: Proje
     <div className="space-y-4">
       {/* KPI Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <BIKPICard
-          title="Projeção Base (6 meses)"
+        <KPICard
+          label="Projeção Base (6 meses)"
           value={formatCurrency(projecaoTotal.base)}
           subtitle="Cenário mais provável"
           icon={Target}
-          variant="bi"
         />
-        <BIKPICard
-          title="Projeção Otimista"
+        <KPICard
+          label="Projeção Otimista"
           value={formatCurrency(projecaoTotal.otimista)}
           subtitle="Cenário de crescimento"
           icon={TrendingUp}
-          variant="success"
+          tone="success"
         />
-        <BIKPICard
-          title="Projeção Conservadora"
+        <KPICard
+          label="Projeção Conservadora"
           value={formatCurrency(projecaoTotal.pessimista)}
           subtitle="Cenário cauteloso"
           icon={Calendar}
-          variant="warning"
+          tone="warning"
         />
       </div>
 

@@ -1,110 +1,68 @@
-import { cn } from "@/lib/utils";
 import { forwardRef } from "react";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, type LucideIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-interface KPICardProps extends React.HTMLAttributes<HTMLDivElement> {
-  title: string;
+export type KPITone = "default" | "success" | "warning" | "danger" | "info";
+
+interface KPICardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "children"> {
+  label: string;
   value: string | number;
   subtitle?: string;
-  icon?: React.ReactNode;
-  trend?: {
-    value: number;
-    label?: string;
-  };
-  variant?: "default" | "success" | "warning" | "destructive" | "info";
+  icon?: LucideIcon;
+  trend?: { value: number; label?: string };
+  tone?: KPITone;
+  size?: "sm" | "md";
 }
 
+const toneIconClass: Record<KPITone, string> = {
+  default: "bg-primary/10 text-primary",
+  success: "bg-success/10 text-success",
+  warning: "bg-warning/10 text-warning",
+  danger: "bg-destructive/10 text-destructive",
+  info: "bg-info/10 text-info",
+};
+
 const KPICard = forwardRef<HTMLDivElement, KPICardProps>(
-  ({ className, title, value, subtitle, icon, trend, variant = "default", ...props }, ref) => {
-    const variantStyles = {
-      default: "from-primary/10 to-primary/5",
-      success: "from-success/10 to-success/5",
-      warning: "from-warning/10 to-warning/5",
-      destructive: "from-destructive/10 to-destructive/5",
-      info: "from-info/10 to-info/5",
-    };
-
-    const iconStyles = {
-      default: "text-primary bg-primary/10",
-      success: "text-success bg-success/10",
-      warning: "text-warning bg-warning/10",
-      destructive: "text-destructive bg-destructive/10",
-      info: "text-info bg-info/10",
-    };
-
-    const getTrendIcon = () => {
-      if (!trend) return null;
-      if (trend.value > 0) return <TrendingUp className="h-4 w-4 text-success" />;
-      if (trend.value < 0) return <TrendingDown className="h-4 w-4 text-destructive" />;
-      return <Minus className="h-4 w-4 text-muted-foreground" />;
-    };
-
-    const getTrendColor = () => {
-      if (!trend) return "";
-      if (trend.value > 0) return "text-success";
-      if (trend.value < 0) return "text-destructive";
-      return "text-muted-foreground";
-    };
+  ({ className, label, value, subtitle, icon: Icon, trend, tone = "default", size = "md", ...props }, ref) => {
+    const TrendIcon = !trend ? null : trend.value > 0 ? TrendingUp : trend.value < 0 ? TrendingDown : Minus;
+    const trendColorClass =
+      !trend || trend.value === 0
+        ? "text-muted-foreground"
+        : trend.value > 0
+        ? "text-success"
+        : "text-destructive";
 
     return (
       <div
         ref={ref}
-        className={cn(
-          "card-kpi group",
-          className
-        )}
+        className={cn("surface-card", size === "sm" ? "p-4" : "p-5", className)}
         {...props}
       >
-        {/* Background gradient overlay */}
-        <div className={cn(
-          "absolute inset-0 bg-gradient-to-br opacity-50 rounded-2xl",
-          variantStyles[variant]
-        )} />
-        
-        <div className="relative z-10">
-          {/* Header with icon */}
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex-1">
-              <p className="text-sm font-medium text-muted-foreground mb-1">
-                {title}
-              </p>
-              <p className="text-3xl font-bold text-foreground tracking-tight">
-                {value}
-              </p>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-muted-foreground truncate">{label}</p>
+            <p className={cn("font-bold text-foreground tracking-tight mt-1", size === "sm" ? "text-xl" : "text-2xl")}>
+              {value}
+            </p>
+            {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
+          </div>
+          {Icon && (
+            <div className={cn("h-9 w-9 rounded-lg flex items-center justify-center shrink-0", toneIconClass[tone])}>
+              <Icon className="h-4 w-4" />
             </div>
-            
-            {icon && (
-              <div className={cn(
-                "p-3 rounded-xl transition-transform duration-300 group-hover:scale-110",
-                iconStyles[variant]
-              )}>
-                {icon}
-              </div>
-            )}
-          </div>
-
-          {/* Footer with trend and subtitle */}
-          <div className="flex items-center justify-between">
-            {subtitle && (
-              <p className="text-sm text-muted-foreground">
-                {subtitle}
-              </p>
-            )}
-            
-            {trend && (
-              <div className={cn(
-                "flex items-center gap-1.5 text-sm font-medium",
-                getTrendColor()
-              )}>
-                {getTrendIcon()}
-                <span>
-                  {trend.value > 0 ? "+" : ""}{trend.value}%
-                  {trend.label && <span className="text-muted-foreground ml-1">{trend.label}</span>}
-                </span>
-              </div>
-            )}
-          </div>
+          )}
         </div>
+
+        {trend && TrendIcon && (
+          <div className={cn("flex items-center gap-1 text-xs font-medium mt-3", trendColorClass)}>
+            <TrendIcon className="h-3.5 w-3.5" />
+            <span>
+              {trend.value > 0 ? "+" : ""}
+              {trend.value}%
+            </span>
+            {trend.label && <span className="text-muted-foreground font-normal">{trend.label}</span>}
+          </div>
+        )}
       </div>
     );
   }

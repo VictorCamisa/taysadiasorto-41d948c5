@@ -4,39 +4,28 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Stethoscope } from "lucide-react";
 import { toast } from "sonner";
+import { PageHeader } from "@/components/PageHeader";
+import { DataTableRowActions } from "@/components/ui/DataTableRowActions";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { LoadingState } from "@/components/ui/LoadingState";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { TratamentosKPIs } from "@/components/tratamentos/TratamentosKPIs";
 import { TratamentosFilters } from "@/components/tratamentos/TratamentosFilters";
 import { TratamentoForm } from "@/components/tratamentos/TratamentoForm";
 import { useTratamentoCalculations } from "@/components/tratamentos/hooks/useTratamentoCalculations";
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-
 export default function Tratamentos() {
   const queryClient = useQueryClient();
   const { getMargemColor } = useTratamentoCalculations();
-  
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedTratamento, setSelectedTratamento] = useState<any>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [tratamentoToDelete, setTratamentoToDelete] = useState<any>(null);
-  
-  const [filters, setFilters] = useState({
-    search: "",
-    grupo: "all",
-    status: "all",
-  });
+
+  const [search, setSearch] = useState("");
 
   // Fetch tratamentos - usando nova tabela 'tratamentos'
   const { data: tratamentos = [], isLoading } = useQuery({
@@ -225,13 +214,8 @@ export default function Tratamentos() {
     setDialogOpen(true);
   };
 
-  const handleFilterChange = (key: string, value: string) => {
-    setFilters({ ...filters, [key]: value });
-  };
-
-  // Apply filters - adaptado para nova estrutura sem campo 'grupo' e 'ativo'
   const filteredTratamentos = tratamentos.filter((t: any) => {
-    if (filters.search && !t.nome.toLowerCase().includes(filters.search.toLowerCase())) {
+    if (search && !t.nome.toLowerCase().includes(search.toLowerCase())) {
       return false;
     }
     return true;
@@ -246,33 +230,21 @@ export default function Tratamentos() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Tratamentos</h1>
-          <p className="text-muted-foreground">
-            Gerencie tratamentos, custos e fichas técnicas
-          </p>
-        </div>
-        <Button onClick={handleOpenNew}>
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Tratamento
-        </Button>
-      </div>
+      <PageHeader
+        title="Tratamentos"
+        description="Gerencie tratamentos, custos e fichas técnicas"
+        icon={<Stethoscope className="h-6 w-6 text-primary" />}
+        actions={
+          <Button onClick={handleOpenNew}>
+            <Plus className="h-4 w-4 mr-2" />
+            Novo Tratamento
+          </Button>
+        }
+      />
 
       <TratamentosKPIs tratamentos={tratamentos} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Filtros</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <TratamentosFilters
-            filters={filters}
-            grupos={[]}
-            onFilterChange={handleFilterChange}
-          />
-        </CardContent>
-      </Card>
+      <TratamentosFilters search={search} onSearchChange={setSearch} />
 
       <Card>
         <CardHeader>
@@ -280,13 +252,13 @@ export default function Tratamentos() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Carregando...
-            </div>
+            <LoadingState />
           ) : filteredTratamentos.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Nenhum tratamento encontrado
-            </div>
+            <EmptyState
+              icon={Stethoscope}
+              title="Nenhum tratamento encontrado"
+              description="Ajuste a busca ou cadastre um novo tratamento."
+            />
           ) : (
             <div className="border rounded-lg">
               <Table>
@@ -326,22 +298,11 @@ export default function Tratamentos() {
                           {margem.toFixed(1)}%
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleEdit(tratamento)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDelete(tratamento)}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
+                          <DataTableRowActions
+                            className="justify-end"
+                            onEdit={() => handleEdit(tratamento)}
+                            onDelete={() => handleDelete(tratamento)}
+                          />
                         </TableCell>
                       </TableRow>
                     );
@@ -361,26 +322,15 @@ export default function Tratamentos() {
         onSave={(data) => saveMutation.mutate(data)}
       />
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir o tratamento "{tratamentoToDelete?.nome}"?
-              Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => tratamentoToDelete && deleteMutation.mutate(tratamentoToDelete.id)}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Confirmar Exclusão"
+        description={`Tem certeza que deseja excluir o tratamento "${tratamentoToDelete?.nome}"? Esta ação não pode ser desfeita.`}
+        confirmLabel="Excluir"
+        variant="destructive"
+        onConfirm={() => tratamentoToDelete && deleteMutation.mutate(tratamentoToDelete.id)}
+      />
     </div>
   );
 }

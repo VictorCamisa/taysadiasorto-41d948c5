@@ -21,16 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { XCircle, Search, Phone, User, RefreshCw, X, TrendingDown } from "lucide-react";
 import {
   useCRMAgendamentos,
@@ -319,23 +310,14 @@ export default function LeadsPerdidos() {
       </Card>
 
       {/* Modal de Reativação */}
-      <AlertDialog open={reativarModal?.open} onOpenChange={(open) => !open && setReativarModal(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Reativar Lead</AlertDialogTitle>
-            <AlertDialogDescription>
-              Deseja reativar o lead <strong>{reativarModal?.nome}</strong>? 
-              Ele será movido para "Em Negociação" para uma nova tentativa de conversão.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleReativar}>
-              Reativar Lead
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={!!reativarModal?.open}
+        onOpenChange={(open) => !open && setReativarModal(null)}
+        title="Reativar Lead"
+        description={`Deseja reativar o lead ${reativarModal?.nome}? Ele será movido para "Em Negociação" para uma nova tentativa de conversão.`}
+        confirmLabel="Reativar Lead"
+        onConfirm={handleReativar}
+      />
     </div>
   );
 }

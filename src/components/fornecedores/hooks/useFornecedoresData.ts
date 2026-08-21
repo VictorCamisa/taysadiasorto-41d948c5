@@ -52,8 +52,6 @@ export const useFornecedoresData = () => {
     refetch,
     kpis: {
       totalFornecedores,
-      fornecedoresAtivos: totalFornecedores,
-      fornecedoresInativos: 0,
     },
     produtosPorFornecedor,
     comprasPorFornecedor,

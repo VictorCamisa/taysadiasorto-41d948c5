@@ -16,6 +16,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -51,6 +52,7 @@ export function ConsentimentosPaciente({ pacienteId }: ConsentimentosPacientePro
   const queryClient = useQueryClient();
   const [selectedTermo, setSelectedTermo] = useState<Termo | null>(null);
   const [aceito, setAceito] = useState(false);
+  const [revogandoId, setRevogandoId] = useState<string | null>(null);
 
   // Buscar termos vigentes
   const { data: termosVigentes = [] } = useQuery({
@@ -226,11 +228,7 @@ export function ConsentimentosPaciente({ pacienteId }: ConsentimentosPacientePro
                   size="sm"
                   variant="ghost"
                   className="text-destructive hover:text-destructive"
-                  onClick={() => {
-                    if (confirm("Deseja revogar este consentimento?")) {
-                      revogarConsentimento.mutate(cons.id);
-                    }
-                  }}
+                  onClick={() => setRevogandoId(cons.id)}
                 >
                   Revogar
                 </Button>
@@ -296,6 +294,19 @@ export function ConsentimentosPaciente({ pacienteId }: ConsentimentosPacientePro
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <ConfirmDialog
+          open={!!revogandoId}
+          onOpenChange={(open) => !open && setRevogandoId(null)}
+          title="Revogar consentimento"
+          description="Deseja revogar este consentimento? O paciente precisará aceitar o termo novamente."
+          confirmLabel="Revogar"
+          variant="destructive"
+          onConfirm={() => {
+            if (revogandoId) revogarConsentimento.mutate(revogandoId);
+            setRevogandoId(null);
+          }}
+        />
       </CardContent>
     </Card>
   );

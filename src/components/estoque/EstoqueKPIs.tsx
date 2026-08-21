@@ -1,5 +1,6 @@
-import { Card, CardContent } from "@/components/ui/card";
 import { Package, CheckCircle, AlertTriangle, DollarSign } from "lucide-react";
+import { KPICard } from "@/components/ui/KPICard";
+import { formatCurrency } from "@/lib/utils";
 
 interface EstoqueKPIsProps {
   valorTotalEstoque: number;
@@ -16,63 +17,10 @@ export const EstoqueKPIs = ({
 }: EstoqueKPIsProps) => {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Valor Total do Estoque</p>
-              <p className="text-2xl font-bold">
-                {valorTotalEstoque.toLocaleString("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
-                })}
-              </p>
-            </div>
-            <Package className="h-8 w-8 text-primary" />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Produtos Ativos</p>
-              <p className="text-2xl font-bold">{produtosAtivos}</p>
-            </div>
-            <CheckCircle className="h-8 w-8 text-primary" />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Produtos Críticos</p>
-              <p className="text-2xl font-bold">{produtosCriticos}</p>
-            </div>
-            <AlertTriangle className="h-8 w-8 text-destructive" />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Total Compras (Mês)</p>
-              <p className="text-2xl font-bold">
-                {totalComprasMes.toLocaleString("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
-                })}
-              </p>
-            </div>
-            <DollarSign className="h-8 w-8 text-primary" />
-          </div>
-        </CardContent>
-      </Card>
+      <KPICard label="Valor Total do Estoque" value={formatCurrency(valorTotalEstoque)} icon={Package} />
+      <KPICard label="Produtos Ativos" value={produtosAtivos} icon={CheckCircle} tone="success" />
+      <KPICard label="Produtos Críticos" value={produtosCriticos} icon={AlertTriangle} tone="danger" />
+      <KPICard label="Total Compras (Mês)" value={formatCurrency(totalComprasMes)} icon={DollarSign} />
     </div>
   );
 };

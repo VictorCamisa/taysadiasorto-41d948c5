@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Filter, TrendingUp, Users, Calendar, DollarSign, Target, Clock, MessageCircle } from "lucide-react";
+import { Plus, TrendingUp, Users, Calendar, DollarSign, Target, Clock, MessageCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/components/PageHeader";
 import { PipelineKanban } from "@/components/crm/PipelineKanban";
@@ -25,6 +25,8 @@ import {
   Prioridade,
 } from "@/components/crm/hooks/useCRMAgendamentos";
 import { toast } from "@/hooks/use-toast";
+import { FilterBar } from "@/components/ui/FilterBar";
+import { LoadingState } from "@/components/ui/LoadingState";
 
 export default function Pipeline() {
   const navigate = useNavigate();
@@ -130,6 +132,18 @@ export default function Pipeline() {
       <PageHeader
         title="Pipeline de Vendas"
         description="Gerencie suas oportunidades e acompanhe o funil comercial"
+        actions={
+          <>
+            <Button variant="outline" onClick={() => navigate("/crm/whatsapp")}>
+              <MessageCircle className="h-4 w-4 mr-2" />
+              Visualização WhatsApp
+            </Button>
+            <Button onClick={handleNewAgendamento}>
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Oportunidade
+            </Button>
+          </>
+        }
       />
 
       {/* KPIs Comerciais */}
@@ -195,81 +209,67 @@ export default function Pipeline() {
         </Card>
       </div>
 
-      {/* Filters and Actions */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-        <div className="flex flex-wrap items-center gap-2">
-          <Filter className="h-4 w-4 text-muted-foreground" />
-          
-          <Select value={selectedOrigem} onValueChange={setSelectedOrigem}>
-            <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="Origem" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas origens</SelectItem>
-              {origens.map((o) => (
-                <SelectItem key={o.id} value={o.id}>
-                  {o.nome}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      <FilterBar
+        filters={
+          <>
+            <Select value={selectedOrigem} onValueChange={setSelectedOrigem}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="Origem" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas origens</SelectItem>
+                {origens.map((o) => (
+                  <SelectItem key={o.id} value={o.id}>
+                    {o.nome}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-          <Select value={selectedTratamento} onValueChange={setSelectedTratamento}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Tratamento" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos tratamentos</SelectItem>
-              {tratamentos.map((t) => (
-                <SelectItem key={t.id} value={t.id}>
-                  {t.nome}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            <Select value={selectedTratamento} onValueChange={setSelectedTratamento}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Tratamento" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos tratamentos</SelectItem>
+                {tratamentos.map((t) => (
+                  <SelectItem key={t.id} value={t.id}>
+                    {t.nome}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-          <Select value={selectedPrioridade} onValueChange={setSelectedPrioridade}>
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="Temperatura" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas</SelectItem>
-              <SelectItem value="alto">🔥 {PRIORIDADE_LABELS.alto}</SelectItem>
-              <SelectItem value="medio">🌡️ {PRIORIDADE_LABELS.medio}</SelectItem>
-              <SelectItem value="baixo">❄️ {PRIORIDADE_LABELS.baixo}</SelectItem>
-            </SelectContent>
-          </Select>
+            <Select value={selectedPrioridade} onValueChange={setSelectedPrioridade}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Temperatura" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas</SelectItem>
+                <SelectItem value="alto">🔥 {PRIORIDADE_LABELS.alto}</SelectItem>
+                <SelectItem value="medio">🌡️ {PRIORIDADE_LABELS.medio}</SelectItem>
+                <SelectItem value="baixo">❄️ {PRIORIDADE_LABELS.baixo}</SelectItem>
+              </SelectContent>
+            </Select>
 
-          {hasActiveFilters && (
-            <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9">
-              Limpar
-            </Button>
-          )}
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9">
+                Limpar
+              </Button>
+            )}
 
-          {hasActiveFilters && (
-            <Badge variant="secondary" className="text-xs">
-              {agendamentos.length} resultados
-            </Badge>
-          )}
-        </div>
-
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate("/crm/whatsapp")}>
-            <MessageCircle className="h-4 w-4 mr-2" />
-            Visualização WhatsApp
-          </Button>
-          <Button onClick={handleNewAgendamento}>
-            <Plus className="h-4 w-4 mr-2" />
-            Nova Oportunidade
-          </Button>
-        </div>
-      </div>
+            {hasActiveFilters && (
+              <Badge variant="secondary" className="text-xs self-center">
+                {agendamentos.length} resultados
+              </Badge>
+            )}
+          </>
+        }
+      />
 
       {/* Kanban Board */}
       {isLoading ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="text-muted-foreground">Carregando...</div>
-        </div>
+        <LoadingState />
       ) : (
         <PipelineKanban
           agendamentos={agendamentos}

@@ -34,6 +34,7 @@ import Pipeline from "./pages/crm/Pipeline";
 import Agendamentos from "./pages/crm/Agendamentos";
 import PosVenda from "./pages/crm/PosVenda";
 import Leads from "./pages/crm/Leads";
+import LeadsPerdidos from "./pages/crm/LeadsPerdidos";
 import WhatsApp from "./pages/crm/WhatsApp";
 
 // Módulo Admin
@@ -102,6 +103,7 @@ const App = () => (
                         <Route path="/crm/agendamentos" element={<Agendamentos />} />
                         <Route path="/crm/pos-venda" element={<PosVenda />} />
                         <Route path="/crm/leads" element={<Leads />} />
+                        <Route path="/crm/leads-perdidos" element={<LeadsPerdidos />} />
                         <Route path="/crm/whatsapp" element={<WhatsApp />} />
                         <Route path="/crm/pacientes" element={<Pacientes />} />
                         <Route path="/crm/pacientes/:id" element={<FichaPaciente />} />
