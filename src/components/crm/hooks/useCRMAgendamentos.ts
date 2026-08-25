@@ -274,7 +274,7 @@ export function useAgendamentoMutations() {
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status, data_ultimo_contato }: { id: string; status: AgendamentoStatus; data_ultimo_contato?: string }) => {
-      const updateData: Record<string, unknown> = { status };
+      const updateData: { status: AgendamentoStatus; data_ultimo_contato?: string } = { status };
       if (data_ultimo_contato) {
         updateData.data_ultimo_contato = data_ultimo_contato;
       }
